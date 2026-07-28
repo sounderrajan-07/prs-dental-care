@@ -34,7 +34,7 @@ export default function Home() {
             </span>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-primary mb-6 leading-[1.15] tracking-tight font-display">
-              Entrust your smile to <span className="text-secondary underline decoration-secondary-container decoration-4">professionals</span>
+              Entrust your smile to <span className="text-secondary">professionals</span>
             </h1>
 
             <p className="text-base sm:text-lg text-on-surface-variant mb-8 max-w-2xl mx-auto lg:mx-0 font-body leading-relaxed">

@@ -140,7 +140,7 @@ export default function About() {
             About PRS Dental Care
           </span>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-primary tracking-tight mb-6 font-display leading-[1.15]">
-            Dedicated to Gentle, <span className="text-secondary underline decoration-secondary-container decoration-4">High-Precision</span> Dental Excellence
+            Dedicated to Gentle, <span className="text-secondary">High-Precision</span> Dental Excellence
           </h1>
           <p className="text-base sm:text-lg text-on-surface-variant leading-relaxed max-w-2xl mx-auto">
             Since our founding in Chennai, PRS Dental Care has provided patient-centric, painless dental solutions backed by cutting-edge digital dentistry and a trusted team of specialists.

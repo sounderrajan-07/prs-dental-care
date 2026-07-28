@@ -165,7 +165,7 @@ export default function BookAppointment() {
               <div className="mb-6 p-4 bg-primary/5 rounded-2xl border border-primary/20 flex items-center gap-3 text-primary text-sm font-semibold">
                 <span className="material-symbols-outlined text-secondary">verified_user</span>
                 <span>
-                  Consultation requested for <strong className="font-extrabold text-primary underline decoration-secondary decoration-2">{formData.preferredDoctor}</strong>
+                  Consultation requested for <strong className="font-extrabold text-primary">{formData.preferredDoctor}</strong>
                 </span>
               </div>
             )}
