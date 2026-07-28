@@ -7,8 +7,6 @@ export default function Navbar() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [isInstallable, setIsInstallable] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -28,34 +26,6 @@ export default function Navbar() {
     setIsDrawerOpen(false);
   }, [location]);
 
-  // PWA Install Prompt listener
-  useEffect(() => {
-    const handler = (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      setIsInstallable(true);
-    };
-    window.addEventListener('beforeinstallprompt', handler);
-
-    // Hide install button if app is already installed
-    window.addEventListener('appinstalled', () => {
-      setIsInstallable(false);
-      setDeferredPrompt(null);
-    });
-
-    return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
-
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setIsInstallable(false);
-    }
-    setDeferredPrompt(null);
-  };
-
   const navLinks = [
     { name: 'Home', path: '/', icon: 'home' },
     { name: 'Our Services', path: '/services', icon: 'dentistry' },
@@ -73,7 +43,7 @@ export default function Navbar() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          {/* Logo & Brand Name */}
+          {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group py-1">
             <img
               src={logoImg}
@@ -118,19 +88,6 @@ export default function Navbar() {
               <span className="material-symbols-outlined text-primary text-base">call</span>
               <span className="hidden lg:inline">+91 72007 18607</span>
             </a>
-
-            {/* Install App Button (Desktop) */}
-            {isInstallable && (
-              <button
-                onClick={handleInstallClick}
-                className="hidden sm:flex items-center gap-2 bg-success-teal hover:bg-success-teal/90 text-white font-bold px-4 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 text-sm animate-pulse hover:animate-none"
-                aria-label="Install App"
-                id="install-btn-desktop"
-              >
-                <span className="material-symbols-outlined text-lg">install_desktop</span>
-                <span>Install App</span>
-              </button>
-            )}
 
             <Link
               to="/book-appointment"
@@ -207,18 +164,6 @@ export default function Navbar() {
             <span className="material-symbols-outlined text-xl">calendar_month</span>
             <span>Book Appointment</span>
           </Link>
-
-          {/* Install App Button (Mobile Drawer) */}
-          {isInstallable && (
-            <button
-              onClick={handleInstallClick}
-              className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold transition-all bg-success-teal/10 text-success-teal hover:bg-success-teal/20 border border-success-teal/30 mt-2"
-              id="install-btn-mobile"
-            >
-              <span className="material-symbols-outlined text-xl">install_mobile</span>
-              <span className="text-base">Install App</span>
-            </button>
-          )}
         </nav>
 
         {/* Drawer Emergency & Contact Footer */}
