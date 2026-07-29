@@ -1,8 +1,8 @@
 import React from 'react';
 
 export default function LocationSection() {
-  const mapEmbedUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3885.6791638210344!2d80.20988637507914!3d13.125792987199144!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a5264ff6e52ad51%3A0x8bb85a1e27a7cbb0!2sJambulingam%20Main%20Rd%2C%20Kolathur%2C%20Chennai%2C%20Tamil%20Nadu%20600082!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin";
-  const googleMapsDirectionsUrl = "https://maps.google.com/?q=No+59/14,+Jambulingam+main+road,+Annai+Anjugam+Nagar,+G.K.M+Colony,+Chennai+-+600082";
+  const mapEmbedUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3885.7350720491873!2d80.2165139!3d13.1109342!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a526539797aed11%3A0xc121cbc2fbb3347f!2sPRS%20DENTAL%20CARE!5e0!3m2!1sen!2sin!4v1722240000000!5m2!1sen!2sin";
+  const googleMapsDirectionsUrl = "https://www.google.com/maps/place/PRS+DENTAL+CARE/@13.1109291,80.2190888,17z/data=!3m1!4b1!4m6!3m5!1s0x3a526539797aed11:0xc121cbc2fbb3347f!8m2!3d13.1109291!4d80.2190888";
 
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">

@@ -76,7 +76,7 @@ export default function Home() {
                 Top-Rated Dental Clinic in Kolathur, Chennai
               </span>
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-bold text-xs shadow-sm">
-                <span className="text-amber-500">★★★★★</span> 4.9 on Google (250+ Reviews)
+                <span className="text-amber-500">★★★★★</span> 4.9 on Google (23 Reviews)
               </span>
             </div>
 
