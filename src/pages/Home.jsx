@@ -9,6 +9,7 @@ import pediatricDentistryImg from '../../Images/Pediatric Dentistry.webp';
 import TestimonialSlider from '../components/TestimonialSlider';
 import BookingModal from '../components/BookingModal';
 import ContactModal from '../components/ContactModal';
+import SEO from '../components/SEO';
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -20,8 +21,47 @@ export default function Home() {
     setIsModalOpen(true);
   };
 
+  const homeFaqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is root canal treatment at PRS Dental Care painless?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, PRS Dental Care in Kolathur uses modern rotary endodontics and local anesthesia to ensure painless single-sitting root canal treatments."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Where is PRS Dental Care located in Kolathur, Chennai?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PRS Dental Care is located at No 59/14, Jambulingam main road, G.K.M Colony, Kolathur, Chennai - 600082."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How can I book a dental appointment online?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "You can book an appointment online directly on our website or call +91 72007 18607 for immediate consultations."
+        }
+      }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="PRS Dental Care | Best Dental Clinic in Kolathur, Chennai"
+        description="PRS Dental Care is a top-rated dental clinic in Kolathur, Chennai offering painless root canals, 3D dental implants, laser whitening & pediatric care."
+        keywords="Dental clinic in Kolathur, Best Dentist in Kolathur Chennai, Root canal treatment Kolathur, Dental implants Chennai, Teeth whitening Kolathur, PRS Dental Care"
+        canonical="https://prsdentalcare.com/"
+        ogImage="https://prsdentalcare.com/Images/Hero%20Section%20Image.webp"
+        jsonLd={homeFaqSchema}
+      />
       {/* Hero Section */}
       <section className="relative px-4 sm:px-6 lg:px-8 pt-12 pb-16 overflow-hidden bg-gradient-soft border-b border-outline-variant/15">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -34,11 +74,11 @@ export default function Home() {
             </span>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-primary mb-6 leading-[1.15] tracking-tight font-display">
-              Entrust your smile to <span className="text-secondary">professionals</span>
+              Best Dental Clinic in <span className="text-secondary">Kolathur, Chennai</span>
             </h1>
 
             <p className="text-base sm:text-lg text-on-surface-variant mb-8 max-w-2xl mx-auto lg:mx-0 font-body leading-relaxed">
-              Welcome to PRS Dental Care, where your healthy, confident smile is our highest commitment. Experience painless procedures, modern 3D imaging, and specialized care tailored for your whole family.
+              Welcome to PRS Dental Care, where your healthy, confident smile is our highest commitment. Experience painless procedures, modern 3D imaging, and specialized dental care tailored for your whole family.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
@@ -91,8 +131,9 @@ export default function Home() {
             <div className="relative w-full max-w-md rounded-3xl overflow-hidden clinical-shadow border-4 border-white transform hover:scale-[1.02] transition-transform duration-500">
               <img
                 src={heroImg}
-                alt="PRS Dental Care Specialist"
+                alt="PRS Dental Care - Expert Dentist in Kolathur Chennai"
                 className="w-full h-auto object-cover"
+                loading="eager"
               />
 
               {/* Floating Trust Badge Overlay */}

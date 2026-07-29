@@ -3,10 +3,29 @@ import { Link } from 'react-router-dom';
 import doctorImg from '../../Images/Patient.avif';
 import logoImg from '../../Images/PRS.logo.webp';
 import ContactModal from '../components/ContactModal';
+import SEO from '../components/SEO';
 
 export default function About() {
   const [activeFaq, setActiveFaq] = useState(null);
   const [isContactOpen, setIsContactOpen] = useState(false);
+
+  const aboutSchema = {
+    "@context": "https://schema.org",
+    "@type": "MedicalOrganization",
+    "name": "PRS Dental Care Kolathur Specialists",
+    "url": "https://prsdentalcare.com/about",
+    "logo": "https://prsdentalcare.com/Images/PRS.logo.webp",
+    "description": "Team of expert MDS dental specialists in Kolathur, Chennai including Implantologists, Endodontists, Orthodontists, and Pediatric Dentists.",
+    "medicalSpecialty": [
+      "PediatricDentistry",
+      "Orthodontics",
+      "OralAndMaxillofacialSurgery",
+      "Periodontics",
+      "Endodontics",
+      "Prosthodontics"
+    ]
+  };
+
 
   const specialists = [
     {
@@ -128,6 +147,13 @@ export default function About() {
 
   return (
     <div className="min-h-screen bg-background pb-16">
+      <SEO
+        title="About Specialist Dentists & Clinic | PRS Dental Care Kolathur"
+        description="Meet the MDS dental specialists at PRS Dental Care in Kolathur, Chennai. Learn about our 15+ years of clinical excellence, modern 3D technology & patient care."
+        keywords="Dentist in Kolathur, MDS Dentist Kolathur, Pediatric dentist Kolathur, Orthodontist Chennai, Implantologist Kolathur, PRS Dental Care about"
+        canonical="https://prsdentalcare.com/about"
+        jsonLd={aboutSchema}
+      />
       {/* Hero Header Section */}
       <section className="relative px-4 sm:px-6 lg:px-8 pt-20 pb-16 overflow-hidden bg-gradient-soft border-b border-outline-variant/15 mb-16">
         {/* Decorative backdrop shapes */}

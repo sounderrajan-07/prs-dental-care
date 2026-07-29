@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ContactModal from '../components/ContactModal';
 import { saveAppointment } from '../utils/appointmentStorage';
+import SEO from '../components/SEO';
 
 export default function BookAppointment() {
   const [searchParams] = useSearchParams();
@@ -144,6 +145,12 @@ export default function BookAppointment() {
 
   return (
     <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
+      <SEO
+        title="Book Dental Appointment Online | PRS Dental Care Kolathur"
+        description="Book your appointment online at PRS Dental Care, Kolathur, Chennai. Choose your specialist dentist, preferred date & time for instant confirmation."
+        keywords="Book dentist appointment Kolathur, Dental consultation Chennai, PRS Dental appointment, Dentist booking Kolathur"
+        canonical="https://prsdentalcare.com/book-appointment"
+      />
       <div className="max-w-4xl mx-auto space-y-10">
         
         {/* Header Title */}

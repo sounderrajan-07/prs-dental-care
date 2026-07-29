@@ -7,6 +7,7 @@ import generalDentistryImg from '../../Images/General Dentisty.webp';
 import pediatricDentistryImg from '../../Images/Pediatric Dentistry.webp';
 import ServiceCard from '../components/ServiceCard';
 import BookingModal from '../components/BookingModal';
+import SEO from '../components/SEO';
 
 export default function Services() {
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -14,6 +15,42 @@ export default function Services() {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [bookingService, setBookingService] = useState('');
   const location = useLocation();
+
+  const servicesSchema = {
+    "@context": "https://schema.org",
+    "@type": "MedicalClinic",
+    "name": "PRS Dental Care Services",
+    "medicalSpecialty": [
+      "Endodontics",
+      "Orthodontics",
+      "PediatricDentistry",
+      "Prosthodontics",
+      "Periodontics"
+    ],
+    "availableService": [
+      {
+        "@type": "MedicalProcedure",
+        "name": "Advanced Dental Implants",
+        "description": "Permanent titanium dental implant restoration with 3D CBCT guided precision."
+      },
+      {
+        "@type": "MedicalProcedure",
+        "name": "Painless Root Canal Treatment",
+        "description": "Single-sitting rotary endodontic root canal therapy."
+      },
+      {
+        "@type": "MedicalProcedure",
+        "name": "Laser Tooth Whitening",
+        "description": "Professional 45-minute laser teeth whitening for stain removal."
+      },
+      {
+        "@type": "MedicalProcedure",
+        "name": "Pediatric & Kids Dental Care",
+        "description": "Child-friendly dental care, cavity prevention, and preventive sealants."
+      }
+    ]
+  };
+
 
   const servicesData = [
     {
@@ -178,6 +215,13 @@ export default function Services() {
 
   return (
     <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8 space-y-16">
+      <SEO
+        title="Dental Services & Treatments in Kolathur, Chennai | PRS Dental Care"
+        description="Explore advanced dental treatments at PRS Dental Care, Kolathur: painless root canals, 3D guided implants, laser whitening, orthodontics & pediatric care."
+        keywords="Dental services Kolathur, Root canal cost Chennai, Dental implants Kolathur, Tooth whitening Kolathur, Orthodontist Kolathur"
+        canonical="https://prsdentalcare.com/services"
+        jsonLd={servicesSchema}
+      />
       <div className="max-w-7xl mx-auto space-y-16">
         
         {/* Header section */}
