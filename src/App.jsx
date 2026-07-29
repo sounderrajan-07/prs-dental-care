@@ -7,6 +7,8 @@ import Services from './pages/Services';
 import About from './pages/About';
 import BookAppointment from './pages/BookAppointment';
 import Admin from './pages/Admin';
+import MobileActionBar from './components/MobileActionBar';
+import WhatsAppButton from './components/WhatsAppButton';
 
 // ScrollToTop helper on navigation
 function ScrollToTop() {
@@ -23,7 +25,7 @@ export default function App() {
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ScrollToTop />
-      <div className="flex flex-col min-h-screen bg-background text-on-surface font-sans selection:bg-secondary-container selection:text-on-secondary-container">
+      <div className="flex flex-col min-h-screen bg-background text-on-surface font-sans selection:bg-secondary-container selection:text-on-secondary-container pb-14 md:pb-0">
         <Navbar />
         <main className="flex-grow">
           <Routes>
@@ -35,6 +37,8 @@ export default function App() {
           </Routes>
         </main>
         <Footer />
+        <MobileActionBar />
+        <WhatsAppButton />
       </div>
     </Router>
   );

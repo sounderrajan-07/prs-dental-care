@@ -10,6 +10,8 @@ import TestimonialSlider from '../components/TestimonialSlider';
 import BookingModal from '../components/BookingModal';
 import ContactModal from '../components/ContactModal';
 import SEO from '../components/SEO';
+import BeforeAfterGallery from '../components/BeforeAfterGallery';
+import LocationSection from '../components/LocationSection';
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -68,10 +70,15 @@ export default function Home() {
           
           {/* Left Text Column */}
           <div className="lg:col-span-7 text-center lg:text-left z-10">
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface-container-highest text-primary font-bold text-xs uppercase tracking-wider mb-6 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-success-teal animate-pulse"></span>
-              Top-Rated Dental Clinic in Kolathur, Chennai
-            </span>
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 mb-6">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface-container-highest text-primary font-bold text-xs uppercase tracking-wider shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-success-teal animate-pulse"></span>
+                Top-Rated Dental Clinic in Kolathur, Chennai
+              </span>
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-bold text-xs shadow-sm">
+                <span className="text-amber-500">★★★★★</span> 4.9 on Google (250+ Reviews)
+              </span>
+            </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-primary mb-6 leading-[1.15] tracking-tight font-display">
               Best Dental Clinic in <span className="text-secondary">Kolathur, Chennai</span>
@@ -422,8 +429,14 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Before & After Smile Gallery */}
+      <BeforeAfterGallery />
+
       {/* Patient Testimonials Section */}
       <TestimonialSlider />
+
+      {/* Google Maps Location Section */}
+      <LocationSection />
 
       {/* Booking Modal Trigger */}
       <BookingModal

@@ -27,13 +27,18 @@ export default function Footer() {
             <p className="text-sm text-on-primary/80 leading-relaxed">
               Your premier dental destination in Kolathur, Chennai. Advanced treatments with painless techniques and personalized patient care.
             </p>
-            <div className="flex items-center gap-3 pt-2">
-              <span className="flex items-center justify-center w-9 h-9 rounded-full bg-surface-container-highest/20 text-secondary-container">
-                <span className="material-symbols-outlined text-lg">verified</span>
-              </span>
-              <span className="text-xs font-semibold text-on-primary/90">
-                100% Certified Dental Clinic & Sterilization
-              </span>
+            <div className="space-y-2 pt-2">
+              <div className="flex items-center gap-3">
+                <span className="flex items-center justify-center w-9 h-9 rounded-full bg-surface-container-highest/20 text-secondary-container">
+                  <span className="material-symbols-outlined text-lg">verified</span>
+                </span>
+                <span className="text-xs font-semibold text-on-primary/90">
+                  100% Certified Dental Clinic & Sterilization
+                </span>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 text-amber-300 font-bold text-xs w-fit">
+                <span className="text-amber-400">★★★★★</span> 4.9 Rating on Google (250+ Reviews)
+              </div>
             </div>
           </div>
 
