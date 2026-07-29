@@ -257,10 +257,10 @@ export default function About() {
               </div>
             </div>
 
-            <div className="pt-4 flex gap-4">
+            <div className="pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
               <Link
                 to="/book-appointment"
-                className="bg-primary hover:bg-primary-container text-on-primary font-bold py-3.5 px-6 rounded-xl shadow-md transition-all text-sm flex items-center gap-2 active:scale-95"
+                className="w-full sm:w-auto justify-center bg-primary hover:bg-primary-container text-on-primary font-bold py-3.5 px-6 rounded-xl shadow-md transition-all text-sm flex items-center gap-2 active:scale-95 text-center"
               >
                 <span className="material-symbols-outlined text-lg">calendar_month</span>
                 Book Appointment
@@ -273,7 +273,7 @@ export default function About() {
                   }
                   setIsContactOpen(true);
                 }}
-                className="bg-surface-container-high hover:bg-surface-container-highest text-primary font-bold py-3.5 px-6 rounded-xl transition-all text-sm flex items-center gap-2 active:scale-95 cursor-pointer"
+                className="w-full sm:w-auto justify-center bg-surface-container-high hover:bg-surface-container-highest text-primary font-bold py-3.5 px-6 rounded-xl transition-all text-sm flex items-center gap-2 active:scale-95 cursor-pointer text-center"
               >
                 <span className="material-symbols-outlined text-lg">call</span>
                 Contact Clinic
