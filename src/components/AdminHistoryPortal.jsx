@@ -7,6 +7,7 @@ import {
 import { CLINIC_DOCTORS } from '../utils/attendanceStorage';
 import InvoiceRxGeneratorModal from './InvoiceRxGeneratorModal';
 import AdminFeedbackModeration from './AdminFeedbackModeration';
+import AdminDoctorManagement from './AdminDoctorManagement';
 
 export default function AdminHistoryPortal({ onLogout }) {
   const [historyRecords, setHistoryRecords] = useState([]);
@@ -302,6 +303,9 @@ export default function AdminHistoryPortal({ onLogout }) {
         </div>
 
       </div>
+
+      {/* Doctor Credentials & Access Code Manager Section */}
+      <AdminDoctorManagement />
 
       {/* Patient Feedback Moderation Section */}
       <AdminFeedbackModeration />

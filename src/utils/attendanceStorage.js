@@ -1,11 +1,12 @@
+import { getStoredDoctors } from './doctorStorage';
+
 const ATTENDANCE_STORAGE_KEY = 'prs_doctor_attendance_v1';
 
-export const CLINIC_DOCTORS = [
-  { id: 'doc1', name: 'Dr. P. R. Sundharam', specialization: 'M.D.S - Endodontist & Implantologist', passcode: 'doc123' },
-  { id: 'doc2', name: 'Dr. R. Sathya', specialization: 'M.D.S - Cosmetic & Orthodontic Specialist', passcode: 'doc123' },
-  { id: 'doc3', name: 'Dr. A. K. Vikram', specialization: 'M.D.S - Oral & Maxillofacial Surgeon', passcode: 'doc123' },
-  { id: 'doc4', name: 'Dr. M. Priya', specialization: 'B.D.S - Pediatric Dentist & Preventive Care', passcode: 'doc123' }
-];
+export const CLINIC_DOCTORS = getStoredDoctors();
+
+export const getActiveDoctorsList = () => {
+  return getStoredDoctors();
+};
 
 // Helper to generate seed attendance records for demo
 const generateSeedAttendance = () => {

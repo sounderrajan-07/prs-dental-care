@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DoctorPortal from '../components/DoctorPortal';
 import AttendancePortal from '../components/AttendancePortal';
 import AdminHistoryPortal from '../components/AdminHistoryPortal';
-import { CLINIC_DOCTORS } from '../utils/attendanceStorage';
+import { getStoredDoctors, verifyDoctorLogin } from '../utils/doctorStorage';
 
 export default function Admin() {
+  // Doctor accounts list
+  const [doctorList, setDoctorList] = useState(() => getStoredDoctors());
+
   // Authentication & Authorized Roles State
   // Role: 'admin' | 'doctor' | 'attendance' | null
   const [authRole, setAuthRole] = useState(() => {
@@ -23,18 +26,34 @@ export default function Admin() {
   const [selectedRoleTarget, setSelectedRoleTarget] = useState('admin'); // Login tab target
   const [passcode, setPasscode] = useState('');
   const [passcodeError, setPasscodeError] = useState(false);
-  const [activeDoctor, setActiveDoctor] = useState(CLINIC_DOCTORS[0]);
+
+  const [activeDoctor, setActiveDoctor] = useState(() => {
+    try {
+      const storedDoc = sessionStorage.getItem('prs_active_doctor');
+      if (storedDoc) return JSON.parse(storedDoc);
+    } catch {}
+    const doctors = getStoredDoctors();
+    return doctors[0] || { id: 'doc1', name: 'Dr. P. R. Sundharam', specialization: 'M.D.S - Endodontist' };
+  });
+
+  useEffect(() => {
+    setDoctorList(getStoredDoctors());
+  }, [authRole]);
 
   // Modal State for switching to locked/unauthorized role from header
   const [unlockRoleTarget, setUnlockRoleTarget] = useState(null); // 'admin' | 'doctor' | 'attendance' | null
   const [unlockPasscode, setUnlockPasscode] = useState('');
   const [unlockError, setUnlockError] = useState(false);
 
-  const saveAuthSession = (currentRole, allowedList) => {
+  const saveAuthSession = (currentRole, allowedList, docObj = null) => {
     setAuthRole(currentRole);
     setAuthorizedRoles(allowedList);
     sessionStorage.setItem('prs_clinic_role', currentRole);
     sessionStorage.setItem('prs_clinic_authorized_roles', JSON.stringify(allowedList));
+    if (docObj) {
+      setActiveDoctor(docObj);
+      sessionStorage.setItem('prs_active_doctor', JSON.stringify(docObj));
+    }
   };
 
   const handleLoginSubmit = (e) => {
@@ -49,8 +68,9 @@ export default function Admin() {
         setPasscodeError(true);
       }
     } else if (selectedRoleTarget === 'doctor') {
-      if (passcode === 'doctor123' || passcode === 'doc123' || passcode === '1234' || passcode === activeDoctor.passcode) {
-        saveAuthSession('doctor', ['doctor', 'attendance']);
+      const result = verifyDoctorLogin(activeDoctor.id, passcode);
+      if (result.success && result.doctor) {
+        saveAuthSession('doctor', ['doctor', 'attendance'], result.doctor);
         setPasscode('');
       } else {
         setPasscodeError(true);
@@ -218,12 +238,12 @@ export default function Admin() {
                 <select
                   value={activeDoctor.id}
                   onChange={(e) => {
-                    const doc = CLINIC_DOCTORS.find((d) => d.id === e.target.value);
+                    const doc = doctorList.find((d) => d.id === e.target.value);
                     if (doc) setActiveDoctor(doc);
                   }}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-outline bg-surface text-xs font-semibold text-on-surface outline-none focus:ring-2 focus:ring-primary"
                 >
-                  {CLINIC_DOCTORS.map((d) => (
+                  {doctorList.map((d) => (
                     <option key={d.id} value={d.id}>
                       {d.name} ({d.specialization.split('-')[1] || d.specialization})
                     </option>

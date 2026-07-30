@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { CLINIC_DOCTORS } from '../utils/attendanceStorage';
 import { getStoredAppointments, updateStoredStatus, updateAppointmentDetails } from '../utils/appointmentStorage';
 import InvoiceRxGeneratorModal from './InvoiceRxGeneratorModal';
 
 export default function DoctorPortal({ loggedDoctor, onLogout }) {
-  const [selectedDoctorId, setSelectedDoctorId] = useState(loggedDoctor?.id || 'doc1');
   const [appointments, setAppointments] = useState([]);
   const [activeTab, setActiveTab] = useState('Pending');
   const [searchQuery, setSearchQuery] = useState('');
@@ -18,7 +16,7 @@ export default function DoctorPortal({ loggedDoctor, onLogout }) {
   // Productivity Modal State
   const [rxModalData, setRxModalData] = useState(null);
 
-  const activeDocObj = CLINIC_DOCTORS.find((d) => d.id === selectedDoctorId) || CLINIC_DOCTORS[0];
+  const activeDocObj = loggedDoctor || { name: 'Doctor', specialization: 'Specialist Consultant' };
 
   const fetchAppointments = () => {
     const data = getStoredAppointments();
@@ -31,14 +29,13 @@ export default function DoctorPortal({ loggedDoctor, onLogout }) {
     return () => clearInterval(interval);
   }, []);
 
-  // Filter appointments for the active doctor
+  // Strict Doctor Privacy Isolation: Filter ONLY appointments specifically assigned to THIS logged-in doctor
   const doctorAppointments = appointments.filter((apt) => {
-    const matchedDoctor =
+    const isAssignedToThisDoctor =
       apt.preferredDoctor === activeDocObj.name ||
-      apt.preferredDoctor === 'Any Available Specialist' ||
       apt.preferredDoctor === activeDocObj.id;
 
-    if (!matchedDoctor) return false;
+    if (!isAssignedToThisDoctor) return false; // Hide other doctors' patients completely!
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -86,16 +83,21 @@ export default function DoctorPortal({ loggedDoctor, onLogout }) {
     fetchAppointments();
   };
 
+  // Counts strictly for this doctor only
+  const myAssignedAppointments = appointments.filter(
+    (a) => a.preferredDoctor === activeDocObj.name || a.preferredDoctor === activeDocObj.id
+  );
+
   const counts = {
-    Pending: appointments.filter((a) => (a.preferredDoctor === activeDocObj.name || a.preferredDoctor === 'Any Available Specialist') && a.status === 'Pending').length,
-    Approved: appointments.filter((a) => (a.preferredDoctor === activeDocObj.name || a.preferredDoctor === 'Any Available Specialist') && a.status === 'Approved').length,
-    Rejected: appointments.filter((a) => (a.preferredDoctor === activeDocObj.name || a.preferredDoctor === 'Any Available Specialist') && a.status === 'Rejected').length,
-    All: appointments.filter((a) => a.preferredDoctor === activeDocObj.name || a.preferredDoctor === 'Any Available Specialist').length
+    Pending: myAssignedAppointments.filter((a) => a.status === 'Pending').length,
+    Approved: myAssignedAppointments.filter((a) => a.status === 'Approved').length,
+    Rejected: myAssignedAppointments.filter((a) => a.status === 'Rejected').length,
+    All: myAssignedAppointments.length
   };
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      {/* Doctor Header Banner */}
+      {/* Isolated Doctor Header Banner */}
       <div className="bg-surface-container border border-outline-variant rounded-2xl p-6 shadow-sm flex flex-wrap gap-4 items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-2xl">
@@ -103,8 +105,8 @@ export default function DoctorPortal({ loggedDoctor, onLogout }) {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-                Active Doctor Session
+              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 flex items-center gap-1">
+                <span className="material-symbols-outlined text-xs">lock</span> Isolated Doctor Portal
               </span>
               <span className="text-xs text-on-surface-variant">• PRS Dental Care</span>
             </div>
@@ -113,23 +115,8 @@ export default function DoctorPortal({ loggedDoctor, onLogout }) {
           </div>
         </div>
 
-        {/* Doctor Switcher & Actions */}
+        {/* Actions */}
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex flex-col">
-            <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Switch Active Profile</label>
-            <select
-              value={selectedDoctorId}
-              onChange={(e) => setSelectedDoctorId(e.target.value)}
-              className="px-3 py-1.5 rounded-xl border border-outline bg-surface text-sm font-semibold text-on-surface outline-none focus:ring-2 focus:ring-primary"
-            >
-              {CLINIC_DOCTORS.map((doc) => (
-                <option key={doc.id} value={doc.id}>
-                  {doc.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
           <button
             onClick={() => setRxModalData({ doctorName: activeDocObj.name })}
             className="px-4 py-2 bg-secondary text-on-secondary hover:bg-secondary-hover text-xs font-bold rounded-xl shadow-sm transition-colors flex items-center gap-1.5"
@@ -151,27 +138,27 @@ export default function DoctorPortal({ loggedDoctor, onLogout }) {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="p-4 bg-surface-container rounded-xl border border-amber-500/30 bg-amber-500/5">
-          <span className="text-xs font-bold text-amber-700 dark:text-amber-300 uppercase">Pending Approvals</span>
+          <span className="text-xs font-bold text-amber-700 dark:text-amber-300 uppercase">My Pending Slots</span>
           <div className="text-3xl font-extrabold text-amber-700 dark:text-amber-300 mt-1">{counts.Pending}</div>
-          <span className="text-[11px] text-on-surface-variant">Requires Doctor Action</span>
+          <span className="text-[11px] text-on-surface-variant">Requires Action</span>
         </div>
 
         <div className="p-4 bg-surface-container rounded-xl border border-emerald-500/30 bg-emerald-500/5">
-          <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 uppercase">Approved Slots</span>
+          <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 uppercase">My Approved Slots</span>
           <div className="text-3xl font-extrabold text-emerald-700 dark:text-emerald-300 mt-1">{counts.Approved}</div>
           <span className="text-[11px] text-on-surface-variant">Confirmed Appointments</span>
         </div>
 
         <div className="p-4 bg-surface-container rounded-xl border border-rose-500/30 bg-rose-500/5">
-          <span className="text-xs font-bold text-rose-700 dark:text-rose-300 uppercase">Declined Slots</span>
+          <span className="text-xs font-bold text-rose-700 dark:text-rose-300 uppercase">My Declined Slots</span>
           <div className="text-3xl font-extrabold text-rose-700 dark:text-rose-300 mt-1">{counts.Rejected}</div>
           <span className="text-[11px] text-on-surface-variant">Rejected / Rescheduled</span>
         </div>
 
         <div className="p-4 bg-surface-container rounded-xl border border-primary/30 bg-primary/5">
-          <span className="text-xs font-bold text-primary uppercase">Total Assigned Patients</span>
+          <span className="text-xs font-bold text-primary uppercase">My Assigned Patients</span>
           <div className="text-3xl font-extrabold text-primary mt-1">{counts.All}</div>
-          <span className="text-[11px] text-on-surface-variant">Patient Queue</span>
+          <span className="text-[11px] text-on-surface-variant">Private Queue</span>
         </div>
       </div>
 
@@ -202,7 +189,7 @@ export default function DoctorPortal({ loggedDoctor, onLogout }) {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search patient name, phone..."
+              placeholder="Search my patient name, phone..."
               className="w-full pl-9 pr-4 py-2 bg-surface border border-outline rounded-xl text-xs outline-none focus:ring-2 focus:ring-primary"
             />
             <span className="material-symbols-outlined absolute left-2.5 top-2 text-on-surface-variant text-base">search</span>
@@ -214,8 +201,8 @@ export default function DoctorPortal({ loggedDoctor, onLogout }) {
         {doctorAppointments.length === 0 ? (
           <div className="text-center py-12 border-2 border-dashed border-outline-variant rounded-xl bg-surface">
             <span className="material-symbols-outlined text-4xl text-on-surface-variant">dentistry</span>
-            <h4 className="text-base font-bold text-on-surface mt-2">No appointments match filter</h4>
-            <p className="text-xs text-on-surface-variant mt-1">There are no {activeTab !== 'All' ? activeTab.toLowerCase() : ''} bookings for {activeDocObj.name} right now.</p>
+            <h4 className="text-base font-bold text-on-surface mt-2">No assigned patients found</h4>
+            <p className="text-xs text-on-surface-variant mt-1">There are no {activeTab !== 'All' ? activeTab.toLowerCase() : ''} bookings assigned to {activeDocObj.name}.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
