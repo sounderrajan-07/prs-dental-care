@@ -5,16 +5,37 @@ import AdminHistoryPortal from '../components/AdminHistoryPortal';
 import { CLINIC_DOCTORS } from '../utils/attendanceStorage';
 
 export default function Admin() {
-  // Authentication State
+  // Authentication & Authorized Roles State
   // Role: 'admin' | 'doctor' | 'attendance' | null
   const [authRole, setAuthRole] = useState(() => {
     return sessionStorage.getItem('prs_clinic_role') || null;
   });
 
-  const [selectedRoleTarget, setSelectedRoleTarget] = useState('admin'); // 'admin', 'doctor', 'attendance'
+  const [authorizedRoles, setAuthorizedRoles] = useState(() => {
+    try {
+      const raw = sessionStorage.getItem('prs_clinic_authorized_roles');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [selectedRoleTarget, setSelectedRoleTarget] = useState('admin'); // Login tab target
   const [passcode, setPasscode] = useState('');
   const [passcodeError, setPasscodeError] = useState(false);
   const [activeDoctor, setActiveDoctor] = useState(CLINIC_DOCTORS[0]);
+
+  // Modal State for switching to locked/unauthorized role from header
+  const [unlockRoleTarget, setUnlockRoleTarget] = useState(null); // 'admin' | 'doctor' | 'attendance' | null
+  const [unlockPasscode, setUnlockPasscode] = useState('');
+  const [unlockError, setUnlockError] = useState(false);
+
+  const saveAuthSession = (currentRole, allowedList) => {
+    setAuthRole(currentRole);
+    setAuthorizedRoles(allowedList);
+    sessionStorage.setItem('prs_clinic_role', currentRole);
+    sessionStorage.setItem('prs_clinic_authorized_roles', JSON.stringify(allowedList));
+  };
 
   const handleLoginSubmit = (e) => {
     e.preventDefault();
@@ -22,24 +43,21 @@ export default function Admin() {
 
     if (selectedRoleTarget === 'admin') {
       if (passcode === 'admin123' || passcode === 'admin' || passcode === '1234') {
-        setAuthRole('admin');
-        sessionStorage.setItem('prs_clinic_role', 'admin');
+        saveAuthSession('admin', ['admin', 'doctor', 'attendance']);
         setPasscode('');
       } else {
         setPasscodeError(true);
       }
     } else if (selectedRoleTarget === 'doctor') {
       if (passcode === 'doctor123' || passcode === 'doc123' || passcode === '1234' || passcode === activeDoctor.passcode) {
-        setAuthRole('doctor');
-        sessionStorage.setItem('prs_clinic_role', 'doctor');
+        saveAuthSession('doctor', ['doctor', 'attendance']);
         setPasscode('');
       } else {
         setPasscodeError(true);
       }
     } else if (selectedRoleTarget === 'attendance') {
       if (passcode === 'attend123' || passcode === 'attendance' || passcode === '1234' || passcode === 'admin123') {
-        setAuthRole('attendance');
-        sessionStorage.setItem('prs_clinic_role', 'attendance');
+        saveAuthSession('attendance', ['attendance']);
         setPasscode('');
       } else {
         setPasscodeError(true);
@@ -49,7 +67,51 @@ export default function Admin() {
 
   const handleLogout = () => {
     sessionStorage.removeItem('prs_clinic_role');
+    sessionStorage.removeItem('prs_clinic_authorized_roles');
     setAuthRole(null);
+    setAuthorizedRoles([]);
+  };
+
+  const handleNavClick = (targetRole) => {
+    if (authorizedRoles.includes(targetRole)) {
+      setAuthRole(targetRole);
+      sessionStorage.setItem('prs_clinic_role', targetRole);
+    } else {
+      // Role is not authorized in current session -> Prompt for unlocking passcode
+      setUnlockRoleTarget(targetRole);
+      setUnlockPasscode('');
+      setUnlockError(false);
+    }
+  };
+
+  const handleUnlockSubmit = (e) => {
+    e.preventDefault();
+    setUnlockError(false);
+
+    let isValid = false;
+    let newAllowed = [...authorizedRoles, unlockRoleTarget];
+
+    if (unlockRoleTarget === 'admin') {
+      if (unlockPasscode === 'admin123' || unlockPasscode === 'admin' || unlockPasscode === '1234') {
+        isValid = true;
+        newAllowed = ['admin', 'doctor', 'attendance'];
+      }
+    } else if (unlockRoleTarget === 'doctor') {
+      if (unlockPasscode === 'doctor123' || unlockPasscode === 'doc123' || unlockPasscode === '1234') {
+        isValid = true;
+      }
+    } else if (unlockRoleTarget === 'attendance') {
+      if (unlockPasscode === 'attend123' || unlockPasscode === 'attendance' || unlockPasscode === '1234') {
+        isValid = true;
+      }
+    }
+
+    if (isValid) {
+      saveAuthSession(unlockRoleTarget, newAllowed);
+      setUnlockRoleTarget(null);
+    } else {
+      setUnlockError(true);
+    }
   };
 
   // If not logged in, render the Multi-Role Login Selection Portal
@@ -209,7 +271,7 @@ export default function Admin() {
     <div className="min-h-screen bg-background text-on-surface py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-6">
         
-        {/* Top Control Bar with Quick Role Switcher */}
+        {/* Top Control Bar with Secured Role Switcher */}
         <div className="bg-surface rounded-2xl border border-outline-variant p-4 shadow-sm flex flex-wrap gap-4 items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center font-bold text-xl shadow-xs">
@@ -217,45 +279,53 @@ export default function Admin() {
             </div>
             <div>
               <h2 className="text-base font-bold font-serif text-on-surface">PRS Dental Clinic Management</h2>
-              <span className="text-xs text-on-surface-variant">Active Portal: <strong className="text-primary uppercase">{authRole}</strong></span>
+              <span className="text-xs text-on-surface-variant">
+                Active Portal: <strong className="text-primary uppercase">{authRole}</strong>
+              </span>
             </div>
           </div>
 
-          {/* Role Navigation Buttons */}
+          {/* Role Navigation Buttons with Lock indicators */}
           <div className="flex flex-wrap items-center gap-2">
             <button
-              onClick={() => setAuthRole('admin')}
+              onClick={() => handleNavClick('admin')}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                 authRole === 'admin'
                   ? 'bg-primary text-on-primary shadow-xs'
                   : 'border border-outline text-on-surface-variant hover:text-on-surface bg-surface'
               }`}
             >
-              <span className="material-symbols-outlined text-base">admin_panel_settings</span>
+              <span className="material-symbols-outlined text-base">
+                {authorizedRoles.includes('admin') ? 'admin_panel_settings' : 'lock'}
+              </span>
               <span>Admin & Patient History</span>
             </button>
 
             <button
-              onClick={() => setAuthRole('doctor')}
+              onClick={() => handleNavClick('doctor')}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                 authRole === 'doctor'
                   ? 'bg-primary text-on-primary shadow-xs'
                   : 'border border-outline text-on-surface-variant hover:text-on-surface bg-surface'
               }`}
             >
-              <span className="material-symbols-outlined text-base">stethoscope</span>
+              <span className="material-symbols-outlined text-base">
+                {authorizedRoles.includes('doctor') ? 'stethoscope' : 'lock'}
+              </span>
               <span>Doctor Portal</span>
             </button>
 
             <button
-              onClick={() => setAuthRole('attendance')}
+              onClick={() => handleNavClick('attendance')}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                 authRole === 'attendance'
                   ? 'bg-primary text-on-primary shadow-xs'
                   : 'border border-outline text-on-surface-variant hover:text-on-surface bg-surface'
               }`}
             >
-              <span className="material-symbols-outlined text-base">calendar_month</span>
+              <span className="material-symbols-outlined text-base">
+                {authorizedRoles.includes('attendance') ? 'calendar_month' : 'lock'}
+              </span>
               <span>Doctor Attendance</span>
             </button>
 
@@ -275,6 +345,70 @@ export default function Admin() {
         {authRole === 'attendance' && <AttendancePortal onLogout={handleLogout} />}
 
       </div>
+
+      {/* Access Unlock Modal for Switching to Unauthorized Portals */}
+      {unlockRoleTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fadeIn">
+          <div className="bg-surface rounded-2xl border border-outline-variant max-w-sm w-full p-6 shadow-2xl space-y-4">
+            <div className="flex justify-between items-center border-b border-outline-variant pb-3">
+              <h3 className="text-base font-bold font-serif text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-xl">lock_open</span>
+                <span>Unlock {unlockRoleTarget.toUpperCase()} Access</span>
+              </h3>
+              <button
+                onClick={() => setUnlockRoleTarget(null)}
+                className="text-on-surface-variant hover:text-on-surface font-bold text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-on-surface-variant">
+              Please enter the <strong>{unlockRoleTarget.toUpperCase()} Access Key</strong> to switch to this portal view.
+            </p>
+
+            <form onSubmit={handleUnlockSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">
+                  Passcode
+                </label>
+                <input
+                  type="password"
+                  autoFocus
+                  required
+                  value={unlockPasscode}
+                  onChange={(e) => setUnlockPasscode(e.target.value)}
+                  placeholder="Enter access passcode..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-outline bg-surface text-xs outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              {unlockError && (
+                <p className="text-xs font-bold text-rose-500 bg-rose-500/10 p-2 rounded-xl border border-rose-500/20 text-center flex items-center justify-center gap-1">
+                  <span className="material-symbols-outlined text-sm">warning</span> Incorrect passcode.
+                </p>
+              )}
+
+              <div className="flex gap-2 justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={() => setUnlockRoleTarget(null)}
+                  className="px-3.5 py-2 border border-outline rounded-xl text-xs font-semibold hover:bg-surface-container"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-primary text-on-primary text-xs font-bold rounded-xl hover:bg-primary-hover shadow-sm flex items-center gap-1"
+                >
+                  <span className="material-symbols-outlined text-sm">key</span>
+                  <span>Authorize & View</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
