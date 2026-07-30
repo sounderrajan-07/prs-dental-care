@@ -63,8 +63,8 @@ export default function AttendancePortal({ onLogout }) {
     setTimeout(() => setSuccessMessage(''), 4000);
   };
 
-  const handleExportExcel = () => {
-    downloadMonthlyAttendanceExcel(selectedYear, selectedMonth, selectedDoctorFilter);
+  const handleExportExcel = (format = 'xls') => {
+    downloadMonthlyAttendanceExcel(selectedYear, selectedMonth, selectedDoctorFilter, format);
   };
 
   // Filter records for table
@@ -98,12 +98,18 @@ export default function AttendancePortal({ onLogout }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <button
-            onClick={handleExportExcel}
-            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-2"
+            onClick={() => handleExportExcel('xls')}
+            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5"
           >
-            <span>📊 Download Monthly Excel Sheet (.csv)</span>
+            <span>📑 Download Formatted Excel (.xls)</span>
+          </button>
+          <button
+            onClick={() => handleExportExcel('csv')}
+            className="px-3.5 py-2.5 bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold text-xs rounded-xl border border-outline transition-all flex items-center gap-1.5"
+          >
+            <span>📊 Aligned CSV (.csv)</span>
           </button>
           {onLogout && (
             <button
