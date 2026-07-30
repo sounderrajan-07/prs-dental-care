@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import logoImg from '../../Images/PRS.logo.webp';
 
 function numberToWords(num) {
   if (!num || isNaN(num) || num === 0) return 'Rupees Zero Only';
@@ -489,9 +490,11 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
             {/* Clinic Letterhead Header */}
             <div className="border-b-2 border-teal-700 pb-4 mb-4 flex flex-col sm:flex-row justify-between items-start gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-xl bg-teal-800 text-white flex items-center justify-center font-bold text-2xl font-serif shadow-sm">
-                  PRS
-                </div>
+                <img
+                  src={logoImg}
+                  alt="PRS Dental Care Logo"
+                  className="w-14 h-14 object-contain rounded-xl shadow-sm bg-white p-1 border border-slate-200"
+                />
                 <div>
                   <h1 className="text-2xl font-black font-serif text-teal-900 tracking-tight">PRS DENTAL CARE</h1>
                   <p className="text-xs font-bold text-teal-700 uppercase tracking-wider">Multi-Specialty Dental Clinic & Implant Center</p>
