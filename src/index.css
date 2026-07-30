@@ -29,3 +29,54 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #747781;
 }
+
+/* Print CSS for Clinic Invoice & Rx PDF */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide screen UI elements */
+  body > div:not(.print-modal-overlay),
+  .screen-only,
+  nav, header, footer, button, .material-symbols-outlined {
+    display: none !important;
+  }
+
+  /* Allow modal container to expand cleanly */
+  .print-modal-overlay {
+    position: static !important;
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  .print-modal-content {
+    box-shadow: none !important;
+    border: none !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    width: 100% !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    border-radius: 0 !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm;
+  }
+}
+
