@@ -1,122 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import doctorImg from '../../Images/Patient.avif';
 import logoImg from '../../Images/PRS.logo.webp';
 import ContactModal from '../components/ContactModal';
 import SEO from '../components/SEO';
+import { getStoredDoctors } from '../utils/doctorStorage';
 
 export default function About() {
   const [activeFaq, setActiveFaq] = useState(null);
   const [isContactOpen, setIsContactOpen] = useState(false);
 
-  const aboutSchema = {
-    "@context": "https://schema.org",
-    "@type": "MedicalOrganization",
-    "name": "PRS Dental Care Kolathur Specialists",
-    "url": "https://prsdentalcare.com/about",
-    "logo": "https://prsdentalcare.com/Images/PRS.logo.webp",
-    "description": "Team of expert MDS dental specialists in Kolathur, Chennai including Implantologists, Endodontists, Orthodontists, and Pediatric Dentists.",
-    "medicalSpecialty": [
-      "PediatricDentistry",
-      "Orthodontics",
-      "OralAndMaxillofacialSurgery",
-      "Periodontics",
-      "Endodontics",
-      "Prosthodontics"
-    ]
+  const [specialists, setSpecialists] = useState(() => getStoredDoctors());
+
+  const loadDoctors = () => {
+    setSpecialists(getStoredDoctors());
   };
 
-
-  const specialists = [
-    {
-      name: "Dr. Vijaya Kumar",
-      degree: "M.D.S",
-      specialty: "Pedodontist Specialist (Child Specialist)",
-      icon: "child_care",
-      color: "from-pink-500 to-rose-500",
-      initials: "VK"
-    },
-    {
-      name: "Dr. Keerthi.T",
-      degree: "M.D.S",
-      specialty: "Pedodontist Specialist (Child Specialist)",
-      icon: "child_care",
-      color: "from-pink-500 to-rose-500",
-      initials: "KT"
-    },
-    {
-      name: "Dr. Ragavendra",
-      degree: "M.D.S",
-      specialty: "Orthodontics Specialist",
-      icon: "align_horizontal_center",
-      color: "from-purple-500 to-indigo-500",
-      initials: "RV"
-    },
-    {
-      name: "Dr. Yunus Amin",
-      degree: "M.D.S",
-      specialty: "Orthodontics Specialist",
-      icon: "align_horizontal_center",
-      color: "from-purple-500 to-indigo-500",
-      initials: "YA"
-    },
-    {
-      name: "Dr. Wasim Ahamed",
-      degree: "M.D.S",
-      specialty: "Oral Medicine & Maxillofacial Surgeon",
-      icon: "medical_services",
-      color: "from-blue-500 to-cyan-500",
-      initials: "WA"
-    },
-    {
-      name: "Dr. Naren Kumar",
-      degree: "M.D.S, FCIP",
-      specialty: "Oral Medicine & Maxillofacial Surgeon",
-      icon: "medical_services",
-      color: "from-blue-500 to-cyan-500",
-      initials: "NK"
-    },
-    {
-      name: "Dr. Samu Fathima",
-      degree: "M.D.S",
-      specialty: "Oral Medicine & Maxillofacial Radiology",
-      icon: "biotech",
-      color: "from-teal-500 to-emerald-500",
-      initials: "SF"
-    },
-    {
-      name: "Dr. Yoga Rajan",
-      degree: "M.D.S",
-      specialty: "Periodontist Specialist",
-      icon: "dentistry",
-      color: "from-emerald-500 to-teal-500",
-      initials: "YR"
-    },
-    {
-      name: "Dr. Purushotham",
-      degree: "M.D.S",
-      specialty: "Endodontist Specialist",
-      icon: "dentistry",
-      color: "from-orange-500 to-amber-500",
-      initials: "PT"
-    },
-    {
-      name: "Dr. Faiz",
-      degree: "M.D.S",
-      specialty: "Prosthodontist & Implantologist",
-      icon: "clinical_notes",
-      color: "from-violet-500 to-purple-500",
-      initials: "FZ"
-    },
-    {
-      name: "Dr. Kiran Kumar. P",
-      degree: "M.D.S",
-      specialty: "Prosthodontist & Implantologist",
-      icon: "clinical_notes",
-      color: "from-violet-500 to-purple-500",
-      initials: "KK"
-    }
-  ];
+  useEffect(() => {
+    loadDoctors();
+    window.addEventListener('prs_doctors_updated', loadDoctors);
+    return () => window.removeEventListener('prs_doctors_updated', loadDoctors);
+  }, []);
 
   const faqs = [
     {
@@ -341,10 +245,11 @@ export default function About() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {specialists.map((doc, idx) => {
-              const bookUrl = `/book-appointment?doctor=${encodeURIComponent(doc.name)}&service=${encodeURIComponent(doc.specialty.split(' (')[0].replace(' Specialist', ''))}`;
+              const specText = doc.specialization || doc.specialty || 'Dental Specialist';
+              const bookUrl = `/book-appointment?doctor=${encodeURIComponent(doc.name)}&service=${encodeURIComponent(specText.split(' (')[0].replace(' Specialist', ''))}`;
               return (
                 <div
-                  key={idx}
+                  key={doc.id || idx}
                   className="bg-white rounded-3xl border border-outline-variant/30 clinical-shadow p-6 text-center space-y-4 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group"
                 >
                   {/* Visual Accent Background Accent */}
@@ -352,12 +257,12 @@ export default function About() {
                   
                   {/* Initials Avatar */}
                   <Link to={bookUrl} className="block relative mx-auto w-20 h-20 rounded-full bg-surface-container flex items-center justify-center border-4 border-white shadow-md group-hover:scale-105 transition-transform duration-300">
-                    <div className={`absolute inset-0.5 rounded-full bg-gradient-to-tr ${doc.color} flex items-center justify-center text-white text-xl font-bold shadow-inner`}>
-                      {doc.initials}
+                    <div className={`absolute inset-0.5 rounded-full bg-gradient-to-tr ${doc.color || 'from-primary to-secondary'} flex items-center justify-center text-white text-xl font-bold shadow-inner`}>
+                      {doc.initials || doc.name.substring(0, 2).toUpperCase()}
                     </div>
                     {/* Floating Icon badge */}
                     <span className="absolute -bottom-1 -right-1 w-7 h-7 bg-white text-primary border border-outline-variant/30 rounded-full flex items-center justify-center shadow-sm">
-                      <span className="material-symbols-outlined text-base">{doc.icon}</span>
+                      <span className="material-symbols-outlined text-base">{doc.icon || 'dentistry'}</span>
                     </span>
                   </Link>
 
@@ -368,10 +273,10 @@ export default function About() {
                       </Link>
                     </h3>
                     <span className="inline-block text-[10px] font-extrabold bg-primary/10 text-primary px-2.5 py-0.5 rounded-full">
-                      {doc.degree}
+                      {doc.degree || 'M.D.S'}
                     </span>
                     <p className="text-xs text-on-surface-variant font-semibold pt-1 min-h-[32px] flex items-center justify-center leading-normal">
-                      {doc.specialty}
+                      {specText}
                     </p>
                   </div>
 

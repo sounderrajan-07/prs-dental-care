@@ -1,12 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { saveAppointment } from '../utils/appointmentStorage';
+import { getStoredDoctors } from '../utils/doctorStorage';
 
 export default function BookingModal({ isOpen, onClose, initialService = '' }) {
+  const [doctorsList, setDoctorsList] = useState(() => getStoredDoctors());
+
+  const loadDoctors = () => {
+    setDoctorsList(getStoredDoctors());
+  };
+
+  useEffect(() => {
+    loadDoctors();
+    window.addEventListener('prs_doctors_updated', loadDoctors);
+    return () => window.removeEventListener('prs_doctors_updated', loadDoctors);
+  }, []);
+
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
     email: '',
     service: initialService || 'General Consultation & Checkup',
+    preferredDoctor: 'Dr. P. R. Sundharam',
     date: '',
     timeSlot: '10:00 AM - 11:00 AM',
     notes: '',
@@ -122,6 +136,28 @@ export default function BookingModal({ isOpen, onClose, initialService = '' }) {
                   {servicesList.map((svc, i) => (
                     <option key={i} value={svc}>
                       {svc}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="modal-doctor" className="block text-xs font-bold text-on-surface mb-1.5 flex items-center justify-between">
+                  <span>Preferred Specialist Dentist</span>
+                  <span className="text-[10px] text-primary font-normal font-sans">Synced with Clinic Specialists</span>
+                </label>
+                <select
+                  id="modal-doctor"
+                  name="preferredDoctor"
+                  value={formData.preferredDoctor}
+                  onChange={(e) => setFormData({ ...formData, preferredDoctor: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl border border-outline-variant/60 focus:outline-none focus:border-primary text-sm font-semibold bg-surface-bright text-primary"
+                  required
+                >
+                  <option value="Any Available Specialist">Any Available Specialist (Clinic Choice)</option>
+                  {doctorsList.map((doc) => (
+                    <option key={doc.id} value={doc.name}>
+                      {doc.name} ({doc.specialization})
                     </option>
                   ))}
                 </select>
