@@ -4,12 +4,13 @@ import {
   savePatientHistoryRecord,
   getPatientHistoryStats
 } from '../utils/patientHistoryStorage';
-import { CLINIC_DOCTORS } from '../utils/attendanceStorage';
+import { getStoredDoctors } from '../utils/doctorStorage';
 import InvoiceRxGeneratorModal from './InvoiceRxGeneratorModal';
 import AdminFeedbackModeration from './AdminFeedbackModeration';
 import AdminDoctorManagement from './AdminDoctorManagement';
 
 export default function AdminHistoryPortal({ onLogout }) {
+  const [doctorsList, setDoctorsList] = useState(() => getStoredDoctors());
   const [historyRecords, setHistoryRecords] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [doctorFilter, setDoctorFilter] = useState('All');
@@ -21,8 +22,12 @@ export default function AdminHistoryPortal({ onLogout }) {
   const [newPhone, setNewPhone] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newTreatment, setNewTreatment] = useState('Root Canal Treatment');
-  const [newDoctor, setNewDoctor] = useState(CLINIC_DOCTORS[0].name);
+  const [newDoctor, setNewDoctor] = useState(() => getStoredDoctors()[0]?.name || 'Dr. Purushotham');
   const [newDate, setNewDate] = useState(new Date().toISOString().split('T')[0]);
+
+  const loadDoctors = () => {
+    setDoctorsList(getStoredDoctors());
+  };
   const [newTimeSlot, setNewTimeSlot] = useState('10:00 AM - 11:00 AM');
   const [newDuration, setNewDuration] = useState('45 mins');
   const [newCost, setNewCost] = useState('₹4,500');
@@ -38,6 +43,9 @@ export default function AdminHistoryPortal({ onLogout }) {
 
   useEffect(() => {
     loadHistory();
+    loadDoctors();
+    window.addEventListener('prs_doctors_updated', loadDoctors);
+    return () => window.removeEventListener('prs_doctors_updated', loadDoctors);
   }, []);
 
   const stats = getPatientHistoryStats();
@@ -193,7 +201,7 @@ export default function AdminHistoryPortal({ onLogout }) {
               className="px-3 py-1.5 rounded-xl border border-outline bg-surface text-xs font-semibold outline-none"
             >
               <option value="All">All Attending Doctors</option>
-              {CLINIC_DOCTORS.map((d) => (
+              {doctorsList.map((d) => (
                 <option key={d.id} value={d.name}>
                   {d.name}
                 </option>
@@ -365,7 +373,7 @@ export default function AdminHistoryPortal({ onLogout }) {
                     onChange={(e) => setNewDoctor(e.target.value)}
                     className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs font-semibold outline-none"
                   >
-                    {CLINIC_DOCTORS.map((d) => (
+                    {doctorsList.map((d) => (
                       <option key={d.id} value={d.name}>
                         {d.name}
                       </option>

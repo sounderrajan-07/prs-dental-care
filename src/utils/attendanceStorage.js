@@ -14,6 +14,7 @@ const generateSeedAttendance = () => {
   const today = new Date();
   const year = today.getFullYear();
   const month = today.getMonth(); // 0-indexed
+  const docsList = getStoredDoctors();
 
   // Seed last 15 days of attendance for each doctor
   for (let day = 1; day <= today.getDate(); day++) {
@@ -22,7 +23,7 @@ const generateSeedAttendance = () => {
 
     if (dayOfWeek === 0) continue; // Skip Sunday clinic closed
 
-    CLINIC_DOCTORS.forEach((doc, idx) => {
+    docsList.forEach((doc, idx) => {
       let status = 'Present';
       let checkIn = '09:30 AM';
       let checkOut = '08:00 PM';
