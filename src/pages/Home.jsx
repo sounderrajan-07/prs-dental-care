@@ -7,6 +7,7 @@ import rootCanalImg from '../../Images/Root Canal.webp';
 import generalDentistryImg from '../../Images/General Dentisty.webp';
 import pediatricDentistryImg from '../../Images/Pediatric Dentistry.webp';
 import TestimonialSlider from '../components/TestimonialSlider';
+import PatientFeedbackForm from '../components/PatientFeedbackForm';
 import BookingModal from '../components/BookingModal';
 import ContactModal from '../components/ContactModal';
 import SEO from '../components/SEO';
@@ -434,6 +435,9 @@ export default function Home() {
 
       {/* Patient Testimonials Section */}
       <TestimonialSlider />
+
+      {/* Patient Feedback Submission Form Section */}
+      <PatientFeedbackForm />
 
       {/* Google Maps Location Section */}
       <LocationSection />

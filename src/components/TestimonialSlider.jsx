@@ -1,58 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getApprovedFeedbacks } from '../utils/feedbackStorage';
 
 export default function TestimonialSlider() {
-  const testimonials = [
-    {
-      id: 1,
-      name: "Pragalya Soundar",
-      location: "PRS Dental Care Patient",
-      rating: 5,
-      treatment: "Root Canal, Tooth Cap & Extraction",
-      comment: "I had an excellent experience at this dental clinic. I got my root canal treatment, tooth cap, and even tooth extraction done here. Dr. Saritha Mam explained everything so clearly and patiently, which made me feel very comfortable and confident before starting the treatment. Dr. Vishali Mam did an amazing job with the root canal; the procedure was smooth, professional, and almost painless. The entire team was extremely friendly and supportive throughout the process. What I really appreciated was how well they took care of patients and ensured comfort at every step. Most importantly, the cost was very budget-friendly compared to other clinics. Getting such high-quality treatment at an affordable price is truly impressive. I highly recommend this clinic to anyone looking for excellent dental care with kind doctors and reasonable pricing. Thank you for the wonderful service!"
-    },
-    {
-      id: 2,
-      name: "Bhavani M",
-      location: "PRS Dental Care Patient",
-      rating: 5,
-      treatment: "Root Canal & Tooth Extraction",
-      comment: "I had an excellent experience at this dental clinic. I got my root canal treatment, tooth cap, and even tooth extraction done here. Dr. Saritha Mam explained everything so clearly and patiently, which made me feel very comfortable and confident before starting the treatment. Dr. Vishali Mam did an amazing job with the root canal; the procedure was smooth, professional, and almost painless. The entire team was extremely friendly and supportive throughout the process. What I really appreciated was how well they took care of patients and ensured comfort at every step. Most importantly, the cost was very budget-friendly compared to other clinics. Getting such high-quality treatment at an affordable price is truly impressive. I highly recommend this clinic to anyone looking for excellent dental care with kind doctors and reasonable pricing. Thank you for the wonderful service!"
-    },
-    {
-      id: 3,
-      name: "Kavin",
-      location: "PRS Dental Care Patient",
-      rating: 5,
-      treatment: "Dental Checkup & Root Canal",
-      comment: "I just came back from a dental checkup that turned into a surprisingly smooth experience, and I felt compelled to share. First, the dentist explained everything in plain language, showing clear pictures of my X-rays. When they pointed out a badly infected molar, they walked me through the two options: a root canal to save the tooth or a simple extraction. Their confidence in both procedures put me at ease. The root canal itself was painless; the numbing agent worked instantly, and the staff kept the room comfortable. They finished the cleaning and sealing in under an hour, and I left with a temporary crown that felt natural. For the wisdom tooth that needed removal, the extraction was quick and virtually painless. They used a modern, minimally invasive technique, and I only felt a slight pressure before the tooth was out. Post-op care instructions were clear, and the prescribed medication kept any discomfort to a minimum. Overall, the whole visit felt professional. The team answered every question, made sure I understood each step, and left me with a bright, healthy smile and confidence in my dental plan. If you’re nervous about root canals or extractions, I highly recommend giving this practice a try—you’ll be pleasantly surprised."
-    },
-    {
-      id: 4,
-      name: "Hari K",
-      location: "PRS Dental Care Patient",
-      rating: 5,
-      treatment: "Root Canal & Tooth Repair",
-      comment: "Excellent Service, Had a good experience here. Dr. treated my mother’s broken tooth with a root canal and fixed it, and handled everything with knowledge, patience, and care. The procedure was smooth, and my mother is feeling much better now. Highly recommended!"
-    },
-    {
-      id: 5,
-      name: "Rohit Bala",
-      location: "PRS Dental Care Patient",
-      rating: 5,
-      treatment: "General Consultation & Care",
-      comment: "Excellent dental care! The clinic is hygienic, well-equipped with modern technology, and the staff is very professional. Dr. Saritha Mam gave clear, helpful suggestions and managed everything smoothly. Highly recommend for quality treatment."
-    },
-    {
-      id: 6,
-      name: "Sarathi Balaji",
-      location: "PRS Dental Care Patient",
-      rating: 5,
-      treatment: "Specialist Dental Care",
-      comment: "I went for my brother. We got an excellent treatment from the doctor. I can't believe this affordable price for this neat ambience with new equipments.. Thank you."
-    }
-  ];
-
+  const [testimonials, setTestimonials] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  const loadFeedbacks = () => {
+    const approved = getApprovedFeedbacks();
+    setTestimonials(approved);
+  };
+
+  useEffect(() => {
+    loadFeedbacks();
+    const interval = setInterval(loadFeedbacks, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   const prevSlide = () => {
     setCurrentIndex((prev) => (prev === 0 ? testimonials.length - 1 : prev - 1));
@@ -62,7 +24,9 @@ export default function TestimonialSlider() {
     setCurrentIndex((prev) => (prev === testimonials.length - 1 ? 0 : prev + 1));
   };
 
-  const current = testimonials[currentIndex];
+  if (testimonials.length === 0) return null;
+
+  const current = testimonials[currentIndex] || testimonials[0];
 
   return (
     <section className="py-16 px-4 bg-surface-ice relative overflow-hidden">
@@ -82,7 +46,7 @@ export default function TestimonialSlider() {
             ))}
           </div>
           <span className="text-xs sm:text-sm font-bold text-on-surface text-center">
-            4.9 / 5.0 Rating (23 Verified Google Reviews)
+            4.9 / 5.0 Rating ({testimonials.length} Verified Reviews)
           </span>
         </div>
       </div>
@@ -105,13 +69,12 @@ export default function TestimonialSlider() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="flex text-amber-500">
-                  {[...Array(current.rating)].map((_, i) => (
+                  {[...Array(current.rating || 5)].map((_, i) => (
                     <span key={i} className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>
                       star
                     </span>
                   ))}
                 </div>
-                {/* Docx Quote Icon */}
                 <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold">
                   “
                 </span>
@@ -127,7 +90,7 @@ export default function TestimonialSlider() {
 
             <div className="pt-1">
               <h4 className="text-base font-extrabold text-primary leading-tight">{current.name}</h4>
-              <p className="text-xs text-on-surface-variant font-medium">{current.location}</p>
+              <p className="text-xs text-on-surface-variant font-medium">PRS Dental Care Patient • {current.date || 'Verified Review'}</p>
               <span className="inline-block mt-2 text-xs font-bold text-success-teal bg-success-teal/10 px-3 py-1 rounded-lg">
                 Treatment: {current.treatment}
               </span>
@@ -157,14 +120,14 @@ export default function TestimonialSlider() {
             <div className="flex gap-2">
               <button
                 onClick={prevSlide}
-                className="p-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-primary transition-all active:scale-95"
+                className="p-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-primary transition-all active:scale-95 flex items-center justify-center"
                 aria-label="Previous review"
               >
                 <span className="material-symbols-outlined text-lg sm:text-xl">arrow_back</span>
               </button>
               <button
                 onClick={nextSlide}
-                className="p-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary shadow-md transition-all active:scale-95"
+                className="p-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary shadow-md transition-all active:scale-95 flex items-center justify-center"
                 aria-label="Next review"
               >
                 <span className="material-symbols-outlined text-lg sm:text-xl">arrow_forward</span>
