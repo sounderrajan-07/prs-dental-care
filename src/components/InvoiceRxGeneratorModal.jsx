@@ -103,7 +103,7 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
             onClick={onClose}
             className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
           >
-            ✕
+            <span className="material-symbols-outlined text-xl">close</span>
           </button>
         </div>
 
@@ -111,23 +111,25 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
         <div className="flex border-b border-outline-variant bg-surface-container-low">
           <button
             onClick={() => setActiveTab('rx')}
-            className={`flex-1 py-3 font-semibold text-sm transition-colors border-b-2 ${
+            className={`flex-1 py-3 font-semibold text-sm transition-colors border-b-2 flex items-center justify-center gap-1.5 ${
               activeTab === 'rx'
                 ? 'border-primary text-primary bg-surface font-bold'
                 : 'border-transparent text-on-surface-variant hover:text-on-surface'
             }`}
           >
-            📋 Digital Rx Prescription
+            <span className="material-symbols-outlined text-base">description</span>
+            <span>Digital Rx Prescription</span>
           </button>
           <button
             onClick={() => setActiveTab('invoice')}
-            className={`flex-1 py-3 font-semibold text-sm transition-colors border-b-2 ${
+            className={`flex-1 py-3 font-semibold text-sm transition-colors border-b-2 flex items-center justify-center gap-1.5 ${
               activeTab === 'invoice'
                 ? 'border-primary text-primary bg-surface font-bold'
                 : 'border-transparent text-on-surface-variant hover:text-on-surface'
             }`}
           >
-            🧾 Patient Billing Invoice
+            <span className="material-symbols-outlined text-base">receipt_long</span>
+            <span>Patient Billing Invoice</span>
           </button>
         </div>
 
@@ -204,15 +206,17 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-bold text-sm text-primary flex items-center gap-2">
-                    <span>💊 Prescribed Medications (Rx)</span>
+                  <h4 className="font-bold text-sm text-primary flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-base">medication</span>
+                    <span>Prescribed Medications (Rx)</span>
                   </h4>
                   <button
                     type="button"
                     onClick={handleAddMedication}
-                    className="text-xs px-3 py-1 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg font-semibold transition-colors"
+                    className="text-xs px-3 py-1 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg font-semibold transition-colors flex items-center gap-1"
                   >
-                    + Add Medicine
+                    <span className="material-symbols-outlined text-sm">add</span>
+                    <span>Add Medicine</span>
                   </button>
                 </div>
 
@@ -261,7 +265,7 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
                           onClick={() => handleRemoveMed(idx)}
                           className="text-red-500 hover:text-red-700 text-sm p-1"
                         >
-                          ✕
+                          <span className="material-symbols-outlined text-sm">close</span>
                         </button>
                       </div>
                     </div>
@@ -273,15 +277,17 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
             /* Billing Invoice Builder */
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-2">
-                <h4 className="font-bold text-sm text-primary flex items-center gap-2">
-                  <span>🧾 Itemized Dental Treatments & Fees</span>
+                <h4 className="font-bold text-sm text-primary flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-base">receipt_long</span>
+                  <span>Itemized Dental Treatments & Fees</span>
                 </h4>
                 <button
                   type="button"
                   onClick={handleAddInvoiceItem}
-                  className="text-xs px-3 py-1 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg font-semibold transition-colors"
+                  className="text-xs px-3 py-1 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg font-semibold transition-colors flex items-center gap-1"
                 >
-                  + Add Treatment Item
+                  <span className="material-symbols-outlined text-sm">add</span>
+                  <span>Add Treatment Item</span>
                 </button>
               </div>
 
@@ -322,7 +328,7 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
                         onClick={() => handleRemoveItem(idx)}
                         className="text-red-500 hover:text-red-700 text-sm p-1"
                       >
-                        ✕
+                        <span className="material-symbols-outlined text-sm">close</span>
                       </button>
                     </div>
                   </div>
@@ -370,13 +376,15 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
               onClick={handleWhatsAppShare}
               className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition-colors"
             >
-              <span>💬 Share via WhatsApp</span>
+              <span className="material-symbols-outlined text-base">chat</span>
+              <span>Share via WhatsApp</span>
             </button>
             <button
               onClick={handlePrint}
               className="px-5 py-2 bg-primary hover:bg-primary-hover text-on-primary text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-md transition-colors"
             >
-              <span>🖨️ Print / Save PDF</span>
+              <span className="material-symbols-outlined text-base">print</span>
+              <span>Print / Save PDF</span>
             </button>
           </div>
         </div>

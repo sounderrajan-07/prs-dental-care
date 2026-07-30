@@ -99,7 +99,7 @@ export default function DoctorPortal({ loggedDoctor, onLogout }) {
       <div className="bg-surface-container border border-outline-variant rounded-2xl p-6 shadow-sm flex flex-wrap gap-4 items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-2xl">
-            🩺
+            <span className="material-symbols-outlined text-3xl">stethoscope</span>
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -134,14 +134,16 @@ export default function DoctorPortal({ loggedDoctor, onLogout }) {
             onClick={() => setRxModalData({ doctorName: activeDocObj.name })}
             className="px-4 py-2 bg-secondary text-on-secondary hover:bg-secondary-hover text-xs font-bold rounded-xl shadow-sm transition-colors flex items-center gap-1.5"
           >
-            <span>📝 Write Rx / Invoice</span>
+            <span className="material-symbols-outlined text-base">description</span>
+            <span>Write Rx / Invoice</span>
           </button>
 
           <button
             onClick={onLogout}
-            className="px-3.5 py-2 border border-outline rounded-xl text-xs font-semibold hover:bg-surface-container-high text-on-surface transition-colors"
+            className="px-3.5 py-2 border border-outline rounded-xl text-xs font-semibold hover:bg-surface-container-high text-on-surface transition-colors flex items-center gap-1"
           >
-            Lock Session
+            <span className="material-symbols-outlined text-base">lock</span>
+            <span>Lock Session</span>
           </button>
         </div>
       </div>
@@ -203,7 +205,7 @@ export default function DoctorPortal({ loggedDoctor, onLogout }) {
               placeholder="Search patient name, phone..."
               className="w-full pl-9 pr-4 py-2 bg-surface border border-outline rounded-xl text-xs outline-none focus:ring-2 focus:ring-primary"
             />
-            <span className="absolute left-3 top-2.5 text-on-surface-variant text-xs">🔍</span>
+            <span className="material-symbols-outlined absolute left-2.5 top-2 text-on-surface-variant text-base">search</span>
           </div>
 
         </div>
@@ -211,7 +213,7 @@ export default function DoctorPortal({ loggedDoctor, onLogout }) {
         {/* Doctor Appointment Cards List */}
         {doctorAppointments.length === 0 ? (
           <div className="text-center py-12 border-2 border-dashed border-outline-variant rounded-xl bg-surface">
-            <span className="text-4xl">🦷</span>
+            <span className="material-symbols-outlined text-4xl text-on-surface-variant">dentistry</span>
             <h4 className="text-base font-bold text-on-surface mt-2">No appointments match filter</h4>
             <p className="text-xs text-on-surface-variant mt-1">There are no {activeTab !== 'All' ? activeTab.toLowerCase() : ''} bookings for {activeDocObj.name} right now.</p>
           </div>
@@ -249,15 +251,21 @@ export default function DoctorPortal({ loggedDoctor, onLogout }) {
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-on-surface">Date & Time:</span>
-                      <span>📅 {apt.date} ({apt.timeSlot})</span>
+                      <span className="flex items-center gap-1">
+                        <span className="material-symbols-outlined text-xs">calendar_month</span> {apt.date} ({apt.timeSlot})
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-on-surface">Duration:</span>
-                      <span className="px-2 py-0.5 bg-surface-container-high rounded text-[11px] font-semibold">⏱️ {apt.duration || '45 mins'}</span>
+                      <span className="px-2 py-0.5 bg-surface-container-high rounded text-[11px] font-semibold flex items-center gap-1">
+                        <span className="material-symbols-outlined text-xs">schedule</span> {apt.duration || '45 mins'}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-on-surface">Contact:</span>
-                      <span>📞 {apt.phone}</span>
+                      <span className="flex items-center gap-1">
+                        <span className="material-symbols-outlined text-xs">call</span> {apt.phone}
+                      </span>
                     </div>
                     {apt.notes && (
                       <div className="mt-2 p-2 bg-surface-container-low rounded-lg border border-outline-variant/40 text-[11px]">
@@ -278,17 +286,19 @@ export default function DoctorPortal({ loggedDoctor, onLogout }) {
                     {apt.status !== 'Approved' && (
                       <button
                         onClick={() => handleApprove(apt)}
-                        className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors"
+                        className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1"
                       >
-                        ✓ Approve Slot
+                        <span className="material-symbols-outlined text-base">check_circle</span>
+                        <span>Approve Slot</span>
                       </button>
                     )}
                     {apt.status !== 'Rejected' && (
                       <button
                         onClick={() => handleReject(apt)}
-                        className="px-3 py-1.5 bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:bg-rose-500/20 font-bold text-xs rounded-xl transition-colors"
+                        className="px-3 py-1.5 bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:bg-rose-500/20 font-bold text-xs rounded-xl transition-colors flex items-center gap-1"
                       >
-                        ✕ Reject
+                        <span className="material-symbols-outlined text-base">cancel</span>
+                        <span>Reject</span>
                       </button>
                     )}
                   </div>
@@ -296,15 +306,17 @@ export default function DoctorPortal({ loggedDoctor, onLogout }) {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleOpenEditModal(apt)}
-                      className="px-3 py-1.5 border border-outline rounded-xl text-xs font-semibold hover:bg-surface-container-high transition-colors"
+                      className="px-3 py-1.5 border border-outline rounded-xl text-xs font-semibold hover:bg-surface-container-high transition-colors flex items-center gap-1"
                     >
-                      ✏️ Edit Entry
+                      <span className="material-symbols-outlined text-base">edit</span>
+                      <span>Edit Entry</span>
                     </button>
                     <button
                       onClick={() => setRxModalData(apt)}
-                      className="px-3 py-1.5 bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold rounded-xl transition-colors"
+                      className="px-3 py-1.5 bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold rounded-xl transition-colors flex items-center gap-1"
                     >
-                      📝 Rx / Bill
+                      <span className="material-symbols-outlined text-base">receipt_long</span>
+                      <span>Rx / Bill</span>
                     </button>
                   </div>
                 </div>

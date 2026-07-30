@@ -61,7 +61,7 @@ export default function Admin() {
           {/* Logo & Header */}
           <div className="text-center space-y-2">
             <div className="w-16 h-16 bg-primary/10 text-primary border border-primary/20 rounded-2xl flex items-center justify-center font-bold text-3xl mx-auto shadow-sm">
-              🦷
+              <span className="material-symbols-outlined text-3xl">dentistry</span>
             </div>
             <h1 className="text-2xl font-extrabold font-serif text-on-surface">PRS Dental Care</h1>
             <p className="text-xs text-on-surface-variant font-medium">Dynamic Clinic Management & Portal Access</p>
@@ -75,13 +75,14 @@ export default function Admin() {
                 setSelectedRoleTarget('admin');
                 setPasscodeError(false);
               }}
-              className={`py-2 px-1 text-center rounded-xl font-bold text-xs transition-all ${
+              className={`py-2 px-1 text-center rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1 ${
                 selectedRoleTarget === 'admin'
                   ? 'bg-surface text-primary shadow-sm border border-outline-variant/80'
                   : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
-              👑 Admin Login
+              <span className="material-symbols-outlined text-base">admin_panel_settings</span>
+              <span>Admin</span>
             </button>
 
             <button
@@ -90,13 +91,14 @@ export default function Admin() {
                 setSelectedRoleTarget('doctor');
                 setPasscodeError(false);
               }}
-              className={`py-2 px-1 text-center rounded-xl font-bold text-xs transition-all ${
+              className={`py-2 px-1 text-center rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1 ${
                 selectedRoleTarget === 'doctor'
                   ? 'bg-surface text-primary shadow-sm border border-outline-variant/80'
                   : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
-              🩺 Doctor Login
+              <span className="material-symbols-outlined text-base">stethoscope</span>
+              <span>Doctor</span>
             </button>
 
             <button
@@ -105,13 +107,14 @@ export default function Admin() {
                 setSelectedRoleTarget('attendance');
                 setPasscodeError(false);
               }}
-              className={`py-2 px-1 text-center rounded-xl font-bold text-xs transition-all ${
+              className={`py-2 px-1 text-center rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1 ${
                 selectedRoleTarget === 'attendance'
                   ? 'bg-surface text-primary shadow-sm border border-outline-variant/80'
                   : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
-              📅 Attendance
+              <span className="material-symbols-outlined text-base">calendar_month</span>
+              <span>Attendance</span>
             </button>
           </div>
 
@@ -119,21 +122,27 @@ export default function Admin() {
           <div className="p-3 bg-surface-container rounded-xl border border-outline-variant text-xs text-on-surface-variant space-y-1">
             {selectedRoleTarget === 'admin' && (
               <>
-                <div className="font-bold text-primary">Master Admin Access</div>
+                <div className="font-bold text-primary flex items-center gap-1">
+                  <span className="material-symbols-outlined text-base">security</span> Master Admin Access
+                </div>
                 <p>Manage patient history, treatment durations, cost, doctor assignments & clinic metrics. Default key: <code className="bg-surface px-1 py-0.5 rounded font-mono text-primary font-bold">admin123</code></p>
               </>
             )}
 
             {selectedRoleTarget === 'doctor' && (
               <>
-                <div className="font-bold text-primary">Doctor Dedicated Portal</div>
+                <div className="font-bold text-primary flex items-center gap-1">
+                  <span className="material-symbols-outlined text-base">medical_services</span> Doctor Dedicated Portal
+                </div>
                 <p>Monitor patient slot bookings, approve or reject appointments & update patient notes. Default key: <code className="bg-surface px-1 py-0.5 rounded font-mono text-primary font-bold">doctor123</code></p>
               </>
             )}
 
             {selectedRoleTarget === 'attendance' && (
               <>
-                <div className="font-bold text-primary">Doctor Attendance Portal</div>
+                <div className="font-bold text-primary flex items-center gap-1">
+                  <span className="material-symbols-outlined text-base">badge</span> Doctor Attendance Portal
+                </div>
                 <p>Mark daily doctor attendance, shift hours & download monthly Excel report sheet. Default key: <code className="bg-surface px-1 py-0.5 rounded font-mono text-primary font-bold">attend123</code></p>
               </>
             )}
@@ -176,15 +185,16 @@ export default function Admin() {
             </div>
 
             {passcodeError && (
-              <p className="text-xs font-bold text-rose-500 bg-rose-500/10 p-2.5 rounded-xl border border-rose-500/20 text-center">
-                ⚠️ Invalid access passcode. Please try again.
+              <p className="text-xs font-bold text-rose-500 bg-rose-500/10 p-2.5 rounded-xl border border-rose-500/20 text-center flex items-center justify-center gap-1.5">
+                <span className="material-symbols-outlined text-base">warning</span> Invalid access passcode. Please try again.
               </p>
             )}
 
             <button
               type="submit"
-              className="w-full py-3 bg-primary text-on-primary font-bold rounded-xl hover:bg-primary-hover shadow-md transition-all text-xs uppercase tracking-wider"
+              className="w-full py-3 bg-primary text-on-primary font-bold rounded-xl hover:bg-primary-hover shadow-md transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-1.5"
             >
+              <span className="material-symbols-outlined text-lg">login</span>
               Sign In to {selectedRoleTarget.toUpperCase()} Portal
             </button>
           </form>
@@ -203,7 +213,7 @@ export default function Admin() {
         <div className="bg-surface rounded-2xl border border-outline-variant p-4 shadow-sm flex flex-wrap gap-4 items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center font-bold text-xl shadow-xs">
-              🦷
+              <span className="material-symbols-outlined text-2xl">dentistry</span>
             </div>
             <div>
               <h2 className="text-base font-bold font-serif text-on-surface">PRS Dental Clinic Management</h2>
@@ -215,45 +225,59 @@ export default function Admin() {
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setAuthRole('admin')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                 authRole === 'admin'
                   ? 'bg-primary text-on-primary shadow-xs'
                   : 'border border-outline text-on-surface-variant hover:text-on-surface bg-surface'
               }`}
             >
-              👑 Admin & Patient History
+              <span className="material-symbols-outlined text-base">admin_panel_settings</span>
+              <span>Admin & Patient History</span>
             </button>
 
             <button
               onClick={() => setAuthRole('doctor')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                 authRole === 'doctor'
                   ? 'bg-primary text-on-primary shadow-xs'
                   : 'border border-outline text-on-surface-variant hover:text-on-surface bg-surface'
               }`}
             >
-              🩺 Doctor Portal
+              <span className="material-symbols-outlined text-base">stethoscope</span>
+              <span>Doctor Portal</span>
             </button>
 
             <button
               onClick={() => setAuthRole('attendance')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                 authRole === 'attendance'
                   ? 'bg-primary text-on-primary shadow-xs'
                   : 'border border-outline text-on-surface-variant hover:text-on-surface bg-surface'
               }`}
             >
-              📅 Doctor Attendance
+              <span className="material-symbols-outlined text-base">calendar_month</span>
+              <span>Doctor Attendance</span>
             </button>
 
             <button
               onClick={handleLogout}
-              className="px-3 py-1.5 border border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 rounded-xl text-xs font-bold transition-colors ml-2"
+              className="px-3 py-1.5 border border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 rounded-xl text-xs font-bold transition-colors ml-2 flex items-center gap-1"
             >
-              🚪 Sign Out
+              <span className="material-symbols-outlined text-base">logout</span>
+              <span>Sign Out</span>
             </button>
           </div>
         </div>
+
+        {/* Dynamic Portal View Rendering based on active role */}
+        {authRole === 'admin' && <AdminHistoryPortal onLogout={handleLogout} />}
+        {authRole === 'doctor' && <DoctorPortal loggedDoctor={activeDoctor} onLogout={handleLogout} />}
+        {authRole === 'attendance' && <AttendancePortal onLogout={handleLogout} />}
+
+      </div>
+    </div>
+  );
+}
 
         {/* Dynamic Portal View Rendering based on active role */}
         {authRole === 'admin' && <AdminHistoryPortal onLogout={handleLogout} />}

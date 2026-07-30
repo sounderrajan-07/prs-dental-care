@@ -91,7 +91,7 @@ export default function AdminHistoryPortal({ onLogout }) {
       <div className="bg-surface-container border border-outline-variant rounded-2xl p-6 shadow-sm flex flex-wrap gap-4 items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-2xl">
-            👑
+            <span className="material-symbols-outlined text-3xl">admin_panel_settings</span>
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -110,14 +110,16 @@ export default function AdminHistoryPortal({ onLogout }) {
             onClick={() => setShowAddModal(true)}
             className="px-4 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary-hover shadow-md transition-colors flex items-center gap-1.5"
           >
-            <span>+ Add Patient History Record</span>
+            <span className="material-symbols-outlined text-base">add</span>
+            <span>Add Patient History Record</span>
           </button>
           {onLogout && (
             <button
               onClick={onLogout}
-              className="px-3.5 py-2.5 border border-outline rounded-xl text-xs font-semibold hover:bg-surface-container-high transition-colors"
+              className="px-3.5 py-2.5 border border-outline rounded-xl text-xs font-semibold hover:bg-surface-container-high transition-colors flex items-center gap-1"
             >
-              Sign Out
+              <span className="material-symbols-outlined text-base">logout</span>
+              <span>Sign Out</span>
             </button>
           )}
         </div>
@@ -131,7 +133,7 @@ export default function AdminHistoryPortal({ onLogout }) {
             <div className="text-2xl font-extrabold text-primary mt-1">{stats.totalRevenue}</div>
             <span className="text-[11px] text-on-surface-variant">Tracked Treatments</span>
           </div>
-          <span className="text-3xl">💰</span>
+          <span className="material-symbols-outlined text-3xl text-primary">payments</span>
         </div>
 
         <div className="p-5 bg-surface-container rounded-2xl border border-emerald-500/30 bg-emerald-500/5 flex items-center justify-between">
@@ -140,7 +142,7 @@ export default function AdminHistoryPortal({ onLogout }) {
             <div className="text-2xl font-extrabold text-emerald-700 dark:text-emerald-300 mt-1">{stats.completedCount}</div>
             <span className="text-[11px] text-on-surface-variant">Successful Patients</span>
           </div>
-          <span className="text-3xl">✅</span>
+          <span className="material-symbols-outlined text-3xl text-emerald-600">task_alt</span>
         </div>
 
         <div className="p-5 bg-surface-container rounded-2xl border border-amber-500/30 bg-amber-500/5 flex items-center justify-between">
@@ -149,7 +151,7 @@ export default function AdminHistoryPortal({ onLogout }) {
             <div className="text-2xl font-extrabold text-amber-700 dark:text-amber-300 mt-1">{stats.inProgressCount}</div>
             <span className="text-[11px] text-on-surface-variant">Ongoing Sittings</span>
           </div>
-          <span className="text-3xl">⏳</span>
+          <span className="material-symbols-outlined text-3xl text-amber-600">hourglass_top</span>
         </div>
 
         <div className="p-5 bg-surface-container rounded-2xl border border-secondary/30 bg-secondary/5 flex items-center justify-between">
@@ -158,7 +160,7 @@ export default function AdminHistoryPortal({ onLogout }) {
             <div className="text-2xl font-extrabold text-secondary mt-1">{CLINIC_DOCTORS.length}</div>
             <span className="text-[11px] text-on-surface-variant">Specialist Consultants</span>
           </div>
-          <span className="text-3xl">👨‍⚕️</span>
+          <span className="material-symbols-outlined text-3xl text-secondary">stethoscope</span>
         </div>
       </div>
 
@@ -236,7 +238,9 @@ export default function AdminHistoryPortal({ onLogout }) {
                   <tr key={rec.id} className="hover:bg-surface-container-low transition-colors">
                     <td className="py-3 px-4">
                       <div className="font-bold text-on-surface">{rec.patientName}</div>
-                      <div className="text-[11px] text-on-surface-variant">📞 {rec.patientPhone}</div>
+                      <div className="text-[11px] text-on-surface-variant flex items-center gap-1 mt-0.5">
+                        <span className="material-symbols-outlined text-xs">call</span> {rec.patientPhone}
+                      </div>
                     </td>
 
                     <td className="py-3 px-4 max-w-xs">
@@ -250,13 +254,17 @@ export default function AdminHistoryPortal({ onLogout }) {
                     </td>
 
                     <td className="py-3 px-4">
-                      <div className="font-semibold text-on-surface">📅 {rec.treatmentDate}</div>
-                      <div className="text-[11px] text-on-surface-variant">⏰ {rec.timeSlot}</div>
+                      <div className="font-semibold text-on-surface flex items-center gap-1">
+                        <span className="material-symbols-outlined text-xs">calendar_month</span> {rec.treatmentDate}
+                      </div>
+                      <div className="text-[11px] text-on-surface-variant flex items-center gap-1 mt-0.5">
+                        <span className="material-symbols-outlined text-xs">schedule</span> {rec.timeSlot}
+                      </div>
                     </td>
 
                     <td className="py-3 px-4">
-                      <span className="px-2.5 py-1 bg-surface-container-high rounded-lg font-bold text-[11px]">
-                        ⏱️ {rec.duration}
+                      <span className="px-2.5 py-1 bg-surface-container-high rounded-lg font-bold text-[11px] inline-flex items-center gap-1">
+                        <span className="material-symbols-outlined text-xs">timer</span> {rec.duration}
                       </span>
                     </td>
 
@@ -279,9 +287,10 @@ export default function AdminHistoryPortal({ onLogout }) {
                     <td className="py-3 px-4 text-right">
                       <button
                         onClick={() => setActiveModalData(rec)}
-                        className="px-3 py-1.5 bg-primary/10 text-primary hover:bg-primary/20 text-[11px] font-bold rounded-xl transition-colors"
+                        className="px-3 py-1.5 bg-primary/10 text-primary hover:bg-primary/20 text-[11px] font-bold rounded-xl transition-colors inline-flex items-center gap-1"
                       >
-                        📝 Rx / Invoice
+                        <span className="material-symbols-outlined text-sm">receipt_long</span>
+                        <span>Rx / Invoice</span>
                       </button>
                     </td>
                   </tr>

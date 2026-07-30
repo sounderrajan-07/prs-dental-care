@@ -84,7 +84,7 @@ export default function AttendancePortal({ onLogout }) {
       <div className="bg-surface-container border border-outline-variant rounded-2xl p-6 shadow-sm flex flex-wrap gap-4 items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-secondary/10 text-secondary border border-secondary/20 flex items-center justify-center font-bold text-2xl">
-            📅
+            <span className="material-symbols-outlined text-3xl">calendar_month</span>
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -103,20 +103,23 @@ export default function AttendancePortal({ onLogout }) {
             onClick={() => handleExportExcel('xls')}
             className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5"
           >
-            <span>📑 Download Formatted Excel (.xls)</span>
+            <span className="material-symbols-outlined text-base">table_chart</span>
+            <span>Download Formatted Excel (.xls)</span>
           </button>
           <button
             onClick={() => handleExportExcel('csv')}
             className="px-3.5 py-2.5 bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-bold text-xs rounded-xl border border-outline transition-all flex items-center gap-1.5"
           >
-            <span>📊 Aligned CSV (.csv)</span>
+            <span className="material-symbols-outlined text-base">file_download</span>
+            <span>Aligned CSV (.csv)</span>
           </button>
           {onLogout && (
             <button
               onClick={onLogout}
-              className="px-3.5 py-2.5 border border-outline rounded-xl text-xs font-semibold hover:bg-surface-container-high transition-colors"
+              className="px-3.5 py-2.5 border border-outline rounded-xl text-xs font-semibold hover:bg-surface-container-high transition-colors flex items-center gap-1"
             >
-              Lock Portal
+              <span className="material-symbols-outlined text-base">lock</span>
+              <span>Lock Portal</span>
             </button>
           )}
         </div>
@@ -124,6 +127,7 @@ export default function AttendancePortal({ onLogout }) {
 
       {successMessage && (
         <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-semibold rounded-xl text-xs flex items-center gap-2 animate-fadeIn">
+          <span className="material-symbols-outlined text-base">check_circle</span>
           <span>{successMessage}</span>
         </div>
       )}
@@ -135,7 +139,8 @@ export default function AttendancePortal({ onLogout }) {
         <div className="lg:col-span-5 bg-surface-container rounded-2xl border border-outline-variant p-6 shadow-sm space-y-4">
           <div className="border-b border-outline-variant pb-3">
             <h3 className="text-lg font-bold font-serif text-on-surface flex items-center gap-2">
-              <span>✍️ Mark Daily Doctor Attendance</span>
+              <span className="material-symbols-outlined text-xl text-primary">edit_calendar</span>
+              <span>Mark Daily Doctor Attendance</span>
             </h3>
             <p className="text-xs text-on-surface-variant mt-0.5">Select doctor, date, and shift time to log entry.</p>
           </div>
