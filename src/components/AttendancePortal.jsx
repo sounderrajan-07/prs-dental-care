@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import {
-  CLINIC_DOCTORS,
   getStoredAttendance,
   saveAttendanceEntry,
   getAttendanceSummaryByDoctor,
   downloadMonthlyAttendanceExcel
 } from '../utils/attendanceStorage';
+import { getStoredDoctors } from '../utils/doctorStorage';
 
 export default function AttendancePortal({ onLogout }) {
+  const [doctorsList, setDoctorsList] = useState(() => getStoredDoctors());
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(String(new Date().getMonth() + 1).padStart(2, '0'));
   const [selectedDoctorFilter, setSelectedDoctorFilter] = useState('All');
 
   // Form State for marking daily attendance
-  const [formDoctorId, setFormDoctorId] = useState(CLINIC_DOCTORS[0].id);
+  const [formDoctorId, setFormDoctorId] = useState(() => getStoredDoctors()[0]?.id || 'doc1');
   const [formDate, setFormDate] = useState(new Date().toISOString().split('T')[0]);
   const [formShift, setFormShift] = useState('Full Day');
   const [formStatus, setFormStatus] = useState('Present');
@@ -26,15 +27,19 @@ export default function AttendancePortal({ onLogout }) {
   const loadAttendance = () => {
     const data = getStoredAttendance();
     setAttendanceRecords(data);
+    const docs = getStoredDoctors();
+    setDoctorsList(docs);
   };
 
   useEffect(() => {
     loadAttendance();
+    window.addEventListener('prs_doctors_updated', loadAttendance);
+    return () => window.removeEventListener('prs_doctors_updated', loadAttendance);
   }, []);
 
   const handleMarkAttendance = (e) => {
     e.preventDefault();
-    const docObj = CLINIC_DOCTORS.find((d) => d.id === formDoctorId) || CLINIC_DOCTORS[0];
+    const docObj = doctorsList.find((d) => d.id === formDoctorId) || doctorsList[0];
 
     const workingHours =
       formStatus === 'Present'
@@ -59,7 +64,7 @@ export default function AttendancePortal({ onLogout }) {
     });
 
     loadAttendance();
-    setSuccessMessage(`✓ Attendance marked for ${docObj.name} on ${formDate} as ${formStatus}`);
+    setSuccessMessage(`✓ Attendance recorded for ${docObj.name} on ${formDate}`);
     setTimeout(() => setSuccessMessage(''), 4000);
   };
 
@@ -153,9 +158,9 @@ export default function AttendancePortal({ onLogout }) {
                 onChange={(e) => setFormDoctorId(e.target.value)}
                 className="w-full mt-1 p-2.5 rounded-xl border border-outline bg-surface text-sm font-semibold text-on-surface outline-none focus:ring-2 focus:ring-primary"
               >
-                {CLINIC_DOCTORS.map((doc) => (
+                {doctorsList.map((doc) => (
                   <option key={doc.id} value={doc.id}>
-                    {doc.name} ({doc.specialization.split('-')[1] || doc.specialization})
+                    {doc.name} ({doc.specialization})
                   </option>
                 ))}
               </select>
