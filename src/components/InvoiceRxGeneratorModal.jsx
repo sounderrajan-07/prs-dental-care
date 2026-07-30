@@ -89,7 +89,10 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
   const grandTotal = Math.max(0, subtotal - Number(discount || 0));
 
   const handlePrint = () => {
-    window.print();
+    setViewMode('preview');
+    setTimeout(() => {
+      window.print();
+    }, 150);
   };
 
   const handleWhatsAppShare = () => {
@@ -484,7 +487,7 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
         )}
 
         {/* Live Printable Document Area (Visible in Preview Mode & Always printed via @media print) */}
-        <div className={`p-4 sm:p-6 overflow-y-auto flex-1 bg-slate-100 ${viewMode === 'edit' ? 'screen-only hidden' : ''}`}>
+        <div className={`printable-document-wrapper p-4 sm:p-6 overflow-y-auto flex-1 bg-slate-100 ${viewMode === 'edit' ? 'screen-only hidden' : ''}`}>
           <div className="printable-document bg-white text-slate-900 font-sans p-6 sm:p-8 border border-slate-300 rounded-xl shadow-md max-w-3xl mx-auto my-0">
             
             {/* Clinic Letterhead Header */}
