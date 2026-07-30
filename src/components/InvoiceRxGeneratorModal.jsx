@@ -187,7 +187,7 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
                 viewMode === 'preview' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
-              Clinic PDF Preview
+              Clinic Print Preview
             </button>
           </div>
         </div>
@@ -673,7 +673,7 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
               className="px-5 py-2 bg-primary hover:bg-primary-hover text-on-primary text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-md transition-colors"
             >
               <span className="material-symbols-outlined text-base">print</span>
-              <span>Print / Save PDF</span>
+              <span>{activeTab === 'rx' ? 'Print Prescription' : 'Print Invoice'}</span>
             </button>
           </div>
         </div>
