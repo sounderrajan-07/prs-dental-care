@@ -2,6 +2,7 @@ import { getStoredDoctors } from './doctorStorage';
 
 const ATTENDANCE_STORAGE_KEY = 'prs_doctor_attendance_v1';
 
+export const getClinicDoctors = () => getStoredDoctors();
 export const CLINIC_DOCTORS = getStoredDoctors();
 
 export const getActiveDoctorsList = () => {
@@ -132,7 +133,8 @@ export const getAttendanceSummaryByDoctor = (year, monthStr) => {
   });
 
   const summaryMap = new Map();
-  CLINIC_DOCTORS.forEach((doc) => {
+  const doctorsList = getStoredDoctors();
+  doctorsList.forEach((doc) => {
     summaryMap.set(doc.id, {
       doctorId: doc.id,
       doctorName: doc.name,

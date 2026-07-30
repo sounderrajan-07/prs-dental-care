@@ -52,7 +52,7 @@ export default function AdminHistoryPortal({ onLogout }) {
 
   const handleAddRecord = (e) => {
     e.preventDefault();
-    const docObj = CLINIC_DOCTORS.find((d) => d.name === newDoctor) || CLINIC_DOCTORS[0];
+    const docObj = doctorsList.find((d) => d.name === newDoctor) || doctorsList[0] || { name: newDoctor, specialization: 'Specialist' };
 
     savePatientHistoryRecord({
       patientName: newPatientName,
@@ -167,7 +167,7 @@ export default function AdminHistoryPortal({ onLogout }) {
         <div className="p-5 bg-surface-container rounded-2xl border border-secondary/30 bg-secondary/5 flex items-center justify-between">
           <div>
             <span className="text-xs font-bold text-secondary uppercase">Active Doctors</span>
-            <div className="text-2xl font-extrabold text-secondary mt-1">{CLINIC_DOCTORS.length}</div>
+            <div className="text-2xl font-extrabold text-secondary mt-1">{doctorsList.length}</div>
             <span className="text-[11px] text-on-surface-variant">Specialist Consultants</span>
           </div>
           <span className="material-symbols-outlined text-3xl text-secondary">stethoscope</span>

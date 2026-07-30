@@ -353,7 +353,7 @@ export default function AttendancePortal({ onLogout }) {
               className="px-3 py-1.5 rounded-xl border border-outline bg-surface text-xs font-semibold outline-none"
             >
               <option value="All">All Doctors</option>
-              {CLINIC_DOCTORS.map((d) => (
+              {doctorsList.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.name}
                 </option>
