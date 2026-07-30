@@ -1,0 +1,399 @@
+import React, { useState, useEffect } from 'react';
+import { CLINIC_DOCTORS } from '../utils/attendanceStorage';
+import { getStoredAppointments, updateStoredStatus, updateAppointmentDetails } from '../utils/appointmentStorage';
+import InvoiceRxGeneratorModal from './InvoiceRxGeneratorModal';
+
+export default function DoctorPortal({ loggedDoctor, onLogout }) {
+  const [selectedDoctorId, setSelectedDoctorId] = useState(loggedDoctor?.id || 'doc1');
+  const [appointments, setAppointments] = useState([]);
+  const [activeTab, setActiveTab] = useState('Pending');
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Doctor Remarks / Entry Drawer State
+  const [editingApt, setEditingApt] = useState(null);
+  const [remarksText, setRemarksText] = useState('');
+  const [durationText, setDurationText] = useState('45 mins');
+  const [treatmentStatusText, setTreatmentStatusText] = useState('In Progress');
+
+  // Productivity Modal State
+  const [rxModalData, setRxModalData] = useState(null);
+
+  const activeDocObj = CLINIC_DOCTORS.find((d) => d.id === selectedDoctorId) || CLINIC_DOCTORS[0];
+
+  const fetchAppointments = () => {
+    const data = getStoredAppointments();
+    setAppointments(data);
+  };
+
+  useEffect(() => {
+    fetchAppointments();
+    const interval = setInterval(fetchAppointments, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Filter appointments for the active doctor
+  const doctorAppointments = appointments.filter((apt) => {
+    const matchedDoctor =
+      apt.preferredDoctor === activeDocObj.name ||
+      apt.preferredDoctor === 'Any Available Specialist' ||
+      apt.preferredDoctor === activeDocObj.id;
+
+    if (!matchedDoctor) return false;
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const matchName = apt.name?.toLowerCase().includes(q);
+      const matchPhone = apt.phone?.includes(q);
+      const matchService = apt.service?.toLowerCase().includes(q);
+      if (!matchName && !matchPhone && !matchService) return false;
+    }
+
+    if (activeTab === 'All') return true;
+    return apt.status === activeTab;
+  });
+
+  const handleApprove = (apt) => {
+    const defaultRemarks = `Approved by ${activeDocObj.name}. Slot confirmed.`;
+    updateStoredStatus(apt.id, 'Approved', defaultRemarks, apt.duration || '45 mins');
+    fetchAppointments();
+  };
+
+  const handleReject = (apt) => {
+    const reason = window.prompt(`Please enter rejection reason for ${apt.name}:`, 'Doctor unavailable at requested time slot');
+    if (reason === null) return; // User cancelled prompt
+    updateStoredStatus(apt.id, 'Rejected', `Rejected: ${reason}`);
+    fetchAppointments();
+  };
+
+  const handleOpenEditModal = (apt) => {
+    setEditingApt(apt);
+    setRemarksText(apt.doctorRemarks || '');
+    setDurationText(apt.duration || '45 mins');
+    setTreatmentStatusText(apt.treatmentStatus || 'In Progress');
+  };
+
+  const handleSaveEntry = (e) => {
+    e.preventDefault();
+    if (!editingApt) return;
+
+    updateAppointmentDetails(editingApt.id, {
+      doctorRemarks: remarksText,
+      duration: durationText,
+      treatmentStatus: treatmentStatusText
+    });
+
+    setEditingApt(null);
+    fetchAppointments();
+  };
+
+  const counts = {
+    Pending: appointments.filter((a) => (a.preferredDoctor === activeDocObj.name || a.preferredDoctor === 'Any Available Specialist') && a.status === 'Pending').length,
+    Approved: appointments.filter((a) => (a.preferredDoctor === activeDocObj.name || a.preferredDoctor === 'Any Available Specialist') && a.status === 'Approved').length,
+    Rejected: appointments.filter((a) => (a.preferredDoctor === activeDocObj.name || a.preferredDoctor === 'Any Available Specialist') && a.status === 'Rejected').length,
+    All: appointments.filter((a) => a.preferredDoctor === activeDocObj.name || a.preferredDoctor === 'Any Available Specialist').length
+  };
+
+  return (
+    <div className="space-y-6 animate-fadeIn">
+      {/* Doctor Header Banner */}
+      <div className="bg-surface-container border border-outline-variant rounded-2xl p-6 shadow-sm flex flex-wrap gap-4 items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-2xl">
+            🩺
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+                Active Doctor Session
+              </span>
+              <span className="text-xs text-on-surface-variant">• PRS Dental Care</span>
+            </div>
+            <h2 className="text-2xl font-bold font-serif text-on-surface mt-0.5">{activeDocObj.name}</h2>
+            <p className="text-xs text-on-surface-variant font-medium">{activeDocObj.specialization}</p>
+          </div>
+        </div>
+
+        {/* Doctor Switcher & Actions */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col">
+            <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Switch Active Profile</label>
+            <select
+              value={selectedDoctorId}
+              onChange={(e) => setSelectedDoctorId(e.target.value)}
+              className="px-3 py-1.5 rounded-xl border border-outline bg-surface text-sm font-semibold text-on-surface outline-none focus:ring-2 focus:ring-primary"
+            >
+              {CLINIC_DOCTORS.map((doc) => (
+                <option key={doc.id} value={doc.id}>
+                  {doc.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            onClick={() => setRxModalData({ doctorName: activeDocObj.name })}
+            className="px-4 py-2 bg-secondary text-on-secondary hover:bg-secondary-hover text-xs font-bold rounded-xl shadow-sm transition-colors flex items-center gap-1.5"
+          >
+            <span>📝 Write Rx / Invoice</span>
+          </button>
+
+          <button
+            onClick={onLogout}
+            className="px-3.5 py-2 border border-outline rounded-xl text-xs font-semibold hover:bg-surface-container-high text-on-surface transition-colors"
+          >
+            Lock Session
+          </button>
+        </div>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="p-4 bg-surface-container rounded-xl border border-amber-500/30 bg-amber-500/5">
+          <span className="text-xs font-bold text-amber-700 dark:text-amber-300 uppercase">Pending Approvals</span>
+          <div className="text-3xl font-extrabold text-amber-700 dark:text-amber-300 mt-1">{counts.Pending}</div>
+          <span className="text-[11px] text-on-surface-variant">Requires Doctor Action</span>
+        </div>
+
+        <div className="p-4 bg-surface-container rounded-xl border border-emerald-500/30 bg-emerald-500/5">
+          <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 uppercase">Approved Slots</span>
+          <div className="text-3xl font-extrabold text-emerald-700 dark:text-emerald-300 mt-1">{counts.Approved}</div>
+          <span className="text-[11px] text-on-surface-variant">Confirmed Appointments</span>
+        </div>
+
+        <div className="p-4 bg-surface-container rounded-xl border border-rose-500/30 bg-rose-500/5">
+          <span className="text-xs font-bold text-rose-700 dark:text-rose-300 uppercase">Declined Slots</span>
+          <div className="text-3xl font-extrabold text-rose-700 dark:text-rose-300 mt-1">{counts.Rejected}</div>
+          <span className="text-[11px] text-on-surface-variant">Rejected / Rescheduled</span>
+        </div>
+
+        <div className="p-4 bg-surface-container rounded-xl border border-primary/30 bg-primary/5">
+          <span className="text-xs font-bold text-primary uppercase">Total Assigned Patients</span>
+          <div className="text-3xl font-extrabold text-primary mt-1">{counts.All}</div>
+          <span className="text-[11px] text-on-surface-variant">Patient Queue</span>
+        </div>
+      </div>
+
+      {/* Main Filter & Search Bar */}
+      <div className="bg-surface-container rounded-2xl border border-outline-variant p-4 space-y-4">
+        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+          
+          {/* Tabs */}
+          <div className="flex bg-surface-container-low p-1 rounded-xl border border-outline-variant/60 w-full md:w-auto">
+            {['Pending', 'Approved', 'Rejected', 'All'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === tab
+                    ? 'bg-surface text-primary shadow-sm'
+                    : 'text-on-surface-variant hover:text-on-surface'
+                }`}
+              >
+                {tab} ({counts[tab] || 0})
+              </button>
+            ))}
+          </div>
+
+          {/* Search Input */}
+          <div className="relative w-full md:w-72">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search patient name, phone..."
+              className="w-full pl-9 pr-4 py-2 bg-surface border border-outline rounded-xl text-xs outline-none focus:ring-2 focus:ring-primary"
+            />
+            <span className="absolute left-3 top-2.5 text-on-surface-variant text-xs">🔍</span>
+          </div>
+
+        </div>
+
+        {/* Doctor Appointment Cards List */}
+        {doctorAppointments.length === 0 ? (
+          <div className="text-center py-12 border-2 border-dashed border-outline-variant rounded-xl bg-surface">
+            <span className="text-4xl">🦷</span>
+            <h4 className="text-base font-bold text-on-surface mt-2">No appointments match filter</h4>
+            <p className="text-xs text-on-surface-variant mt-1">There are no {activeTab !== 'All' ? activeTab.toLowerCase() : ''} bookings for {activeDocObj.name} right now.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {doctorAppointments.map((apt) => (
+              <div
+                key={apt.id}
+                className="bg-surface rounded-xl border border-outline-variant/80 p-5 hover:border-primary/50 transition-all shadow-xs flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="text-[11px] font-extrabold text-primary tracking-wider uppercase">{apt.id}</span>
+                      <h4 className="text-lg font-bold text-on-surface leading-tight mt-0.5">{apt.name}</h4>
+                    </div>
+                    <span
+                      className={`text-xs px-2.5 py-1 rounded-full font-bold border ${
+                        apt.status === 'Approved'
+                          ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30'
+                          : apt.status === 'Rejected'
+                          ? 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/30'
+                          : 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30'
+                      }`}
+                    >
+                      {apt.status}
+                    </span>
+                  </div>
+
+                  {/* Booking Metadata */}
+                  <div className="mt-3 space-y-1.5 text-xs text-on-surface-variant">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-on-surface">Service:</span>
+                      <span className="text-primary font-bold">{apt.service}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-on-surface">Date & Time:</span>
+                      <span>📅 {apt.date} ({apt.timeSlot})</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-on-surface">Duration:</span>
+                      <span className="px-2 py-0.5 bg-surface-container-high rounded text-[11px] font-semibold">⏱️ {apt.duration || '45 mins'}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-on-surface">Contact:</span>
+                      <span>📞 {apt.phone}</span>
+                    </div>
+                    {apt.notes && (
+                      <div className="mt-2 p-2 bg-surface-container-low rounded-lg border border-outline-variant/40 text-[11px]">
+                        <span className="font-bold text-on-surface">Patient Request Notes:</span> "{apt.notes}"
+                      </div>
+                    )}
+                    {apt.doctorRemarks && (
+                      <div className="mt-2 p-2 bg-primary/5 rounded-lg border border-primary/20 text-[11px] text-primary">
+                        <span className="font-bold">Doctor Notes:</span> {apt.doctorRemarks}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="mt-4 pt-3 border-t border-outline-variant/60 flex flex-wrap gap-2 items-center justify-between">
+                  <div className="flex gap-2">
+                    {apt.status !== 'Approved' && (
+                      <button
+                        onClick={() => handleApprove(apt)}
+                        className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors"
+                      >
+                        ✓ Approve Slot
+                      </button>
+                    )}
+                    {apt.status !== 'Rejected' && (
+                      <button
+                        onClick={() => handleReject(apt)}
+                        className="px-3 py-1.5 bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:bg-rose-500/20 font-bold text-xs rounded-xl transition-colors"
+                      >
+                        ✕ Reject
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleOpenEditModal(apt)}
+                      className="px-3 py-1.5 border border-outline rounded-xl text-xs font-semibold hover:bg-surface-container-high transition-colors"
+                    >
+                      ✏️ Edit Entry
+                    </button>
+                    <button
+                      onClick={() => setRxModalData(apt)}
+                      className="px-3 py-1.5 bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold rounded-xl transition-colors"
+                    >
+                      📝 Rx / Bill
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Edit Entry Drawer/Modal */}
+      {editingApt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+          <div className="bg-surface rounded-2xl border border-outline-variant max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <div className="flex justify-between items-center border-b border-outline-variant pb-3">
+              <h3 className="text-lg font-bold font-serif text-on-surface">Manage Patient Entry - {editingApt.name}</h3>
+              <button onClick={() => setEditingApt(null)} className="text-on-surface-variant hover:text-on-surface font-bold">✕</button>
+            </div>
+
+            <form onSubmit={handleSaveEntry} className="space-y-4 text-xs">
+              <div>
+                <label className="font-bold text-on-surface-variant uppercase">Estimated Treatment Duration</label>
+                <select
+                  value={durationText}
+                  onChange={(e) => setDurationText(e.target.value)}
+                  className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-sm font-medium outline-none"
+                >
+                  <option value="15 mins">15 mins (Quick Checkup)</option>
+                  <option value="30 mins">30 mins (Scaling / Consultation)</option>
+                  <option value="45 mins">45 mins (Root Canal / Filling)</option>
+                  <option value="60 mins">60 mins (Laser Whitening)</option>
+                  <option value="90 mins">90 mins (Surgical Extraction / Implant)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-bold text-on-surface-variant uppercase">Treatment Progress Status</label>
+                <select
+                  value={treatmentStatusText}
+                  onChange={(e) => setTreatmentStatusText(e.target.value)}
+                  className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-sm font-medium outline-none"
+                >
+                  <option value="Consultation">Consultation Only</option>
+                  <option value="Scheduled">Scheduled</option>
+                  <option value="In Progress">In Progress (Sitting 1 / Ongoing)</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Follow-up Needed">Follow-up Needed</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-bold text-on-surface-variant uppercase">Doctor's Clinical Notes & Remarks</label>
+                <textarea
+                  rows="4"
+                  value={remarksText}
+                  onChange={(e) => setRemarksText(e.target.value)}
+                  placeholder="Record diagnosis, procedure performed, intra-canal medicament, next appointment instructions..."
+                  className="w-full mt-1 p-3 rounded-xl border border-outline bg-surface text-xs outline-none focus:ring-2 focus:ring-primary"
+                ></textarea>
+              </div>
+
+              <div className="flex gap-2 justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingApt(null)}
+                  className="px-4 py-2 border border-outline rounded-xl font-semibold hover:bg-surface-container"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-primary text-on-primary font-bold rounded-xl hover:bg-primary-hover shadow-sm"
+                >
+                  Save Patient Entry
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Rx / Invoice Modal */}
+      {rxModalData && (
+        <InvoiceRxGeneratorModal
+          isOpen={!!rxModalData}
+          onClose={() => setRxModalData(null)}
+          initialData={rxModalData}
+        />
+      )}
+    </div>
+  );
+}

@@ -30,6 +30,7 @@ export default function Navbar() {
     { name: 'Home', path: '/', icon: 'home' },
     { name: 'Our Services', path: '/services', icon: 'dentistry' },
     { name: 'About Us', path: '/about', icon: 'health_and_safety' },
+    { name: 'Clinic Portal', path: '/admin', icon: 'admin_panel_settings' },
   ];
 
   return (
