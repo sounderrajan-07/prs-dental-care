@@ -12,6 +12,23 @@ export default function About() {
 
   const [specialists, setSpecialists] = useState(() => getStoredDoctors());
 
+  const aboutSchema = {
+    "@context": "https://schema.org",
+    "@type": "MedicalOrganization",
+    "name": "PRS Dental Care Kolathur Specialists",
+    "url": "https://prsdentalcare.com/about",
+    "logo": "https://prsdentalcare.com/Images/PRS.logo.webp",
+    "description": "Team of expert MDS dental specialists in Kolathur, Chennai including Implantologists, Endodontists, Orthodontists, and Pediatric Dentists.",
+    "medicalSpecialty": [
+      "PediatricDentistry",
+      "Orthodontics",
+      "OralAndMaxillofacialSurgery",
+      "Periodontics",
+      "Endodontics",
+      "Prosthodontics"
+    ]
+  };
+
   const loadDoctors = () => {
     setSpecialists(getStoredDoctors());
   };
