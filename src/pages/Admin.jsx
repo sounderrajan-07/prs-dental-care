@@ -278,13 +278,3 @@ export default function Admin() {
     </div>
   );
 }
-
-        {/* Dynamic Portal View Rendering based on active role */}
-        {authRole === 'admin' && <AdminHistoryPortal onLogout={handleLogout} />}
-        {authRole === 'doctor' && <DoctorPortal loggedDoctor={activeDoctor} onLogout={handleLogout} />}
-        {authRole === 'attendance' && <AttendancePortal onLogout={handleLogout} />}
-
-      </div>
-    </div>
-  );
-}
