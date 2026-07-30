@@ -73,13 +73,17 @@ export default function TestimonialSlider() {
         <h2 className="text-3xl font-extrabold text-primary tracking-tight mb-3 font-display">
           What Our Patients Say
         </h2>
-        <div className="flex justify-center items-center gap-1 text-secondary text-lg">
-          {[...Array(5)].map((_, i) => (
-            <span key={i} className="material-symbols-outlined text-amber-500" style={{ fontVariationSettings: "'FILL' 1" }}>
-              star
-            </span>
-          ))}
-          <span className="ml-2 text-sm font-bold text-on-surface">5.0 / 5.0 Rating (All 5-Star Verified Reviews)</span>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-3">
+          <div className="flex items-center gap-0.5">
+            {[...Array(5)].map((_, i) => (
+              <span key={i} className="material-symbols-outlined text-amber-500 text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+                star
+              </span>
+            ))}
+          </div>
+          <span className="text-xs sm:text-sm font-bold text-on-surface text-center">
+            4.9 / 5.0 Rating (23 Verified Google Reviews)
+          </span>
         </div>
       </div>
 

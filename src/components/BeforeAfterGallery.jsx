@@ -125,21 +125,21 @@ export default function BeforeAfterGallery() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 bg-error-container/30 rounded-2xl border border-error/20">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-error block mb-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="p-3.5 sm:p-4 bg-error-container/30 rounded-2xl border border-error/20">
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-error block mb-1">
                 Before Treatment
               </span>
-              <p className="text-xs font-semibold text-on-surface">
+              <p className="text-xs sm:text-sm font-semibold text-on-surface leading-snug">
                 {current.beforeStats}
               </p>
             </div>
 
-            <div className="p-4 bg-success-teal/10 rounded-2xl border border-success-teal/30">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-success-teal block mb-1">
+            <div className="p-3.5 sm:p-4 bg-success-teal/10 rounded-2xl border border-success-teal/30">
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-success-teal block mb-1">
                 After Transformation
               </span>
-              <p className="text-xs font-semibold text-on-surface">
+              <p className="text-xs sm:text-sm font-semibold text-on-surface leading-snug">
                 {current.afterStats}
               </p>
             </div>
