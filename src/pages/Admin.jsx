@@ -70,7 +70,7 @@ export default function Admin() {
     } else if (selectedRoleTarget === 'doctor') {
       const result = verifyDoctorLogin(activeDoctor.id, passcode);
       if (result.success && result.doctor) {
-        saveAuthSession('doctor', ['doctor', 'attendance'], result.doctor);
+        saveAuthSession('doctor', ['doctor'], result.doctor);
         setPasscode('');
       } else {
         setPasscodeError(true);
@@ -329,7 +329,9 @@ export default function Admin() {
                   : 'border border-outline text-on-surface-variant hover:text-on-surface bg-surface'
               }`}
             >
-              <span className="material-symbols-outlined text-base">stethoscope</span>
+              <span className="material-symbols-outlined text-base">
+                {authorizedRoles.includes('doctor') ? 'stethoscope' : 'lock'}
+              </span>
               <span>Doctor Portal</span>
             </button>
 
@@ -341,7 +343,9 @@ export default function Admin() {
                   : 'border border-outline text-on-surface-variant hover:text-on-surface bg-surface'
               }`}
             >
-              <span className="material-symbols-outlined text-base">calendar_month</span>
+              <span className="material-symbols-outlined text-base">
+                {authorizedRoles.includes('attendance') ? 'calendar_month' : 'lock'}
+              </span>
               <span>Doctor Attendance</span>
             </button>
 
