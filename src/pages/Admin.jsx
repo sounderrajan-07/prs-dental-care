@@ -36,8 +36,22 @@ export default function Admin() {
     return doctors[0] || { id: 'doc1', name: 'Dr. P. R. Sundharam', specialization: 'M.D.S - Endodontist' };
   });
 
+  const [dbStatus, setDbStatus] = useState({ loading: true, connected: false, provider: '' });
+
   useEffect(() => {
     setDoctorList(getStoredDoctors());
+    fetch('/api/db-status')
+      .then((res) => res.json())
+      .then((data) => {
+        setDbStatus({
+          loading: false,
+          connected: data.connected || false,
+          provider: data.provider || 'LocalStorage'
+        });
+      })
+      .catch(() => {
+        setDbStatus({ loading: false, connected: false, provider: 'LocalStorage Fallback' });
+      });
   }, [authRole]);
 
   // Modal State for switching to locked/unauthorized role from header
@@ -298,7 +312,20 @@ export default function Admin() {
               <span className="material-symbols-outlined text-2xl">dentistry</span>
             </div>
             <div>
-              <h2 className="text-base font-bold font-serif text-on-surface">PRS Dental Clinic Management</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold font-serif text-on-surface">PRS Dental Clinic Management</h2>
+                {dbStatus.connected ? (
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-extrabold text-[10px] border border-emerald-500/30 flex items-center gap-1" title="Neon PostgreSQL Cloud Database Active">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Neon Postgres Active</span>
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 font-extrabold text-[10px] border border-amber-500/30 flex items-center gap-1" title="Running on Local Browser Storage Mode">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                    <span>Browser Storage Mode</span>
+                  </span>
+                )}
+              </div>
               <span className="text-xs text-on-surface-variant">
                 Active Portal: <strong className="text-primary uppercase">{authRole}</strong>
               </span>
