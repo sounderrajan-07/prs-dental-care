@@ -100,7 +100,18 @@ export async function initDbSchema() {
       );
     `;
 
-    console.log('[Neon Postgres] All tables initialized successfully!');
+    // 6. Auto-seed default doctors if empty
+    const [{ count: docCount }] = await sql`SELECT count(*)::int FROM doctors`;
+    if (docCount === 0) {
+      await sql`
+        INSERT INTO doctors (id, name, degree, specialization, experience, phone, email, passcode) VALUES
+        ('doc1', 'Dr. P. R. Sundharam', 'M.D.S', 'Endodontist & Root Canal Specialist', '15+ Years Clinical Experience', '+91 72007 18607', 'drprsundharam@prsdentalcare.com', 'prs123'),
+        ('doc2', 'Dr. Purushotham', 'M.D.S', 'Orthodontist & Dentofacial Specialist', '12+ Years Aligners & Braces Experience', '+91 94443 65637', 'drpurushotham@prsdentalcare.com', 'puru123'),
+        ('doc3', 'Dr. Wasim Ahamed', 'B.D.S, M.D.S', 'Prosthodontist & Implantologist', '10+ Years 3D Guided Implants Experience', '+91 98401 22334', 'drwasim@prsdentalcare.com', 'wasim123')
+      `;
+    }
+
+    console.log('[Neon Postgres] All tables initialized & seeded successfully!');
     return true;
   } catch (err) {
     console.error('[Neon Postgres] Schema init error:', err);
