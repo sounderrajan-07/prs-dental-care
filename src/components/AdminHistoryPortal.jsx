@@ -509,32 +509,40 @@ export default function AdminHistoryPortal({ onLogout }) {
             <form onSubmit={handleAddRecord} className="space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-on-surface-variant uppercase">Patient Full Name</label>
+                  <label htmlFor="history-new-name" className="font-bold text-on-surface-variant uppercase">Patient Full Name</label>
                   <input
+                    id="history-new-name"
+                    name="newPatientName"
                     type="text"
                     required
                     value={newPatientName}
                     onChange={(e) => setNewPatientName(e.target.value)}
                     placeholder="e.g. Ramesh Babu"
+                    autoComplete="name"
                     className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs outline-none"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-on-surface-variant uppercase">Phone Number</label>
+                  <label htmlFor="history-new-phone" className="font-bold text-on-surface-variant uppercase">Phone Number</label>
                   <input
-                    type="text"
+                    id="history-new-phone"
+                    name="newPhone"
+                    type="tel"
                     required
                     value={newPhone}
                     onChange={(e) => setNewPhone(e.target.value)}
                     placeholder="+91 98400 12345"
+                    autoComplete="tel"
                     className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="font-bold text-on-surface-variant uppercase">Treatment / Procedure Rendered</label>
+                <label htmlFor="history-new-treatment" className="font-bold text-on-surface-variant uppercase">Treatment / Procedure Rendered</label>
                 <input
+                  id="history-new-treatment"
+                  name="newTreatment"
                   type="text"
                   required
                   value={newTreatment}
@@ -546,8 +554,10 @@ export default function AdminHistoryPortal({ onLogout }) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-on-surface-variant uppercase">Attending Doctor</label>
+                  <label htmlFor="history-new-doctor" className="font-bold text-on-surface-variant uppercase">Attending Doctor</label>
                   <select
+                    id="history-new-doctor"
+                    name="newDoctor"
                     value={newDoctor}
                     onChange={(e) => setNewDoctor(e.target.value)}
                     className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs font-semibold outline-none"
@@ -560,8 +570,10 @@ export default function AdminHistoryPortal({ onLogout }) {
                   </select>
                 </div>
                 <div>
-                  <label className="font-bold text-on-surface-variant uppercase">Treatment Date</label>
+                  <label htmlFor="history-new-date" className="font-bold text-on-surface-variant uppercase">Treatment Date</label>
                   <input
+                    id="history-new-date"
+                    name="newDate"
                     type="date"
                     value={newDate}
                     onChange={(e) => setNewDate(e.target.value)}
@@ -572,8 +584,10 @@ export default function AdminHistoryPortal({ onLogout }) {
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="font-bold text-on-surface-variant uppercase">Time Slot</label>
+                  <label htmlFor="history-new-timeslot" className="font-bold text-on-surface-variant uppercase">Time Slot</label>
                   <input
+                    id="history-new-timeslot"
+                    name="newTimeSlot"
                     type="text"
                     value={newTimeSlot}
                     onChange={(e) => setNewTimeSlot(e.target.value)}
@@ -582,8 +596,10 @@ export default function AdminHistoryPortal({ onLogout }) {
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-on-surface-variant uppercase">Duration</label>
+                  <label htmlFor="history-new-duration" className="font-bold text-on-surface-variant uppercase">Duration</label>
                   <select
+                    id="history-new-duration"
+                    name="newDuration"
                     value={newDuration}
                     onChange={(e) => setNewDuration(e.target.value)}
                     className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs font-medium outline-none"
@@ -595,8 +611,10 @@ export default function AdminHistoryPortal({ onLogout }) {
                   </select>
                 </div>
                 <div>
-                  <label className="font-bold text-on-surface-variant uppercase">Fee Charged</label>
+                  <label htmlFor="history-new-cost" className="font-bold text-on-surface-variant uppercase">Fee Charged</label>
                   <input
+                    id="history-new-cost"
+                    name="newCost"
                     type="text"
                     value={newCost}
                     onChange={(e) => setNewCost(e.target.value)}
@@ -607,8 +625,10 @@ export default function AdminHistoryPortal({ onLogout }) {
               </div>
 
               <div>
-                <label className="font-bold text-on-surface-variant uppercase">Clinical Treatment Notes</label>
+                <label htmlFor="history-new-notes" className="font-bold text-on-surface-variant uppercase">Clinical Treatment Notes</label>
                 <textarea
+                  id="history-new-notes"
+                  name="newNotes"
                   rows="3"
                   value={newNotes}
                   onChange={(e) => setNewNotes(e.target.value)}
@@ -649,30 +669,38 @@ export default function AdminHistoryPortal({ onLogout }) {
             <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-on-surface-variant uppercase">Patient Full Name</label>
+                  <label htmlFor="history-edit-name" className="font-bold text-on-surface-variant uppercase">Patient Full Name</label>
                   <input
+                    id="history-edit-name"
+                    name="editPatientName"
                     type="text"
                     required
                     value={editPatientName}
                     onChange={(e) => setEditPatientName(e.target.value)}
+                    autoComplete="name"
                     className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs outline-none"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-on-surface-variant uppercase">Phone Number</label>
+                  <label htmlFor="history-edit-phone" className="font-bold text-on-surface-variant uppercase">Phone Number</label>
                   <input
-                    type="text"
+                    id="history-edit-phone"
+                    name="editPhone"
+                    type="tel"
                     required
                     value={editPhone}
                     onChange={(e) => setEditPhone(e.target.value)}
+                    autoComplete="tel"
                     className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="font-bold text-on-surface-variant uppercase">Treatment / Procedure Rendered</label>
+                <label htmlFor="history-edit-treatment" className="font-bold text-on-surface-variant uppercase">Treatment / Procedure Rendered</label>
                 <input
+                  id="history-edit-treatment"
+                  name="editTreatment"
                   type="text"
                   required
                   value={editTreatment}
@@ -683,8 +711,10 @@ export default function AdminHistoryPortal({ onLogout }) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-on-surface-variant uppercase">Attending Doctor</label>
+                  <label htmlFor="history-edit-doctor" className="font-bold text-on-surface-variant uppercase">Attending Doctor</label>
                   <select
+                    id="history-edit-doctor"
+                    name="editDoctor"
                     value={editDoctor}
                     onChange={(e) => setEditDoctor(e.target.value)}
                     className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs font-semibold outline-none"
@@ -697,8 +727,10 @@ export default function AdminHistoryPortal({ onLogout }) {
                   </select>
                 </div>
                 <div>
-                  <label className="font-bold text-on-surface-variant uppercase">Treatment Date</label>
+                  <label htmlFor="history-edit-date" className="font-bold text-on-surface-variant uppercase">Treatment Date</label>
                   <input
+                    id="history-edit-date"
+                    name="editDate"
                     type="date"
                     value={editDate}
                     onChange={(e) => setEditDate(e.target.value)}
@@ -709,8 +741,10 @@ export default function AdminHistoryPortal({ onLogout }) {
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="font-bold text-on-surface-variant uppercase">Time Slot</label>
+                  <label htmlFor="history-edit-timeslot" className="font-bold text-on-surface-variant uppercase">Time Slot</label>
                   <input
+                    id="history-edit-timeslot"
+                    name="editTimeSlot"
                     type="text"
                     value={editTimeSlot}
                     onChange={(e) => setEditTimeSlot(e.target.value)}
@@ -718,8 +752,10 @@ export default function AdminHistoryPortal({ onLogout }) {
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-on-surface-variant uppercase">Duration</label>
+                  <label htmlFor="history-edit-duration" className="font-bold text-on-surface-variant uppercase">Duration</label>
                   <select
+                    id="history-edit-duration"
+                    name="editDuration"
                     value={editDuration}
                     onChange={(e) => setEditDuration(e.target.value)}
                     className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs font-medium outline-none"
@@ -731,8 +767,10 @@ export default function AdminHistoryPortal({ onLogout }) {
                   </select>
                 </div>
                 <div>
-                  <label className="font-bold text-on-surface-variant uppercase">Fee Charged</label>
+                  <label htmlFor="history-edit-cost" className="font-bold text-on-surface-variant uppercase">Fee Charged</label>
                   <input
+                    id="history-edit-cost"
+                    name="editCost"
                     type="text"
                     value={editCost}
                     onChange={(e) => setEditCost(e.target.value)}
@@ -742,8 +780,10 @@ export default function AdminHistoryPortal({ onLogout }) {
               </div>
 
               <div>
-                <label className="font-bold text-on-surface-variant uppercase">Treatment Status</label>
+                <label htmlFor="history-edit-status" className="font-bold text-on-surface-variant uppercase">Treatment Status</label>
                 <select
+                  id="history-edit-status"
+                  name="editStatus"
                   value={editStatus}
                   onChange={(e) => setEditStatus(e.target.value)}
                   className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs font-semibold outline-none"
@@ -754,8 +794,10 @@ export default function AdminHistoryPortal({ onLogout }) {
               </div>
 
               <div>
-                <label className="font-bold text-on-surface-variant uppercase">Clinical Treatment Notes</label>
+                <label htmlFor="history-edit-notes" className="font-bold text-on-surface-variant uppercase">Clinical Treatment Notes</label>
                 <textarea
+                  id="history-edit-notes"
+                  name="editNotes"
                   rows="3"
                   value={editNotes}
                   onChange={(e) => setEditNotes(e.target.value)}

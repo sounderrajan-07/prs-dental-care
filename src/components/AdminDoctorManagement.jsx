@@ -248,19 +248,24 @@ export default function AdminDoctorManagement() {
             <form onSubmit={handleCreateDoctor} className="space-y-3.5 text-xs text-on-surface">
               <div className="grid grid-cols-3 gap-2">
                 <div className="col-span-2">
-                  <label className="font-bold text-on-surface-variant uppercase block mb-1">Doctor Name *</label>
+                  <label htmlFor="doc-add-name" className="font-bold text-on-surface-variant uppercase block mb-1">Doctor Name *</label>
                   <input
+                    id="doc-add-name"
+                    name="docName"
                     type="text"
                     required
                     value={docName}
                     onChange={(e) => setDocName(e.target.value)}
                     placeholder="e.g. Dr. K. Ramesh"
+                    autoComplete="name"
                     className="w-full px-3.5 py-2.5 rounded-xl border border-outline bg-surface text-xs outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-on-surface-variant uppercase block mb-1">Degree</label>
+                  <label htmlFor="doc-add-degree" className="font-bold text-on-surface-variant uppercase block mb-1">Degree</label>
                   <input
+                    id="doc-add-degree"
+                    name="docDegree"
                     type="text"
                     value={docDegree}
                     onChange={(e) => setDocDegree(e.target.value)}
@@ -271,8 +276,10 @@ export default function AdminDoctorManagement() {
               </div>
 
               <div>
-                <label className="font-bold text-on-surface-variant uppercase block mb-1">Specialization / Department *</label>
+                <label htmlFor="doc-add-spec" className="font-bold text-on-surface-variant uppercase block mb-1">Specialization / Department *</label>
                 <input
+                  id="doc-add-spec"
+                  name="docSpec"
                   type="text"
                   required
                   value={docSpec}
@@ -283,8 +290,10 @@ export default function AdminDoctorManagement() {
               </div>
 
               <div>
-                <label className="font-bold text-on-surface-variant uppercase block mb-1">Experience / Bio History</label>
+                <label htmlFor="doc-add-exp" className="font-bold text-on-surface-variant uppercase block mb-1">Experience / Bio History</label>
                 <input
+                  id="doc-add-exp"
+                  name="docExperience"
                   type="text"
                   value={docExperience}
                   onChange={(e) => setDocExperience(e.target.value)}
@@ -295,30 +304,38 @@ export default function AdminDoctorManagement() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-on-surface-variant uppercase block mb-1">Phone Number</label>
+                  <label htmlFor="doc-add-phone" className="font-bold text-on-surface-variant uppercase block mb-1">Phone Number</label>
                   <input
-                    type="text"
+                    id="doc-add-phone"
+                    name="docPhone"
+                    type="tel"
                     value={docPhone}
                     onChange={(e) => setDocPhone(e.target.value)}
                     placeholder="+91 98401 22334"
+                    autoComplete="tel"
                     className="w-full px-3.5 py-2.5 rounded-xl border border-outline bg-surface text-xs outline-none"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-on-surface-variant uppercase block mb-1">Email Address</label>
+                  <label htmlFor="doc-add-email" className="font-bold text-on-surface-variant uppercase block mb-1">Email Address</label>
                   <input
+                    id="doc-add-email"
+                    name="docEmail"
                     type="email"
                     value={docEmail}
                     onChange={(e) => setDocEmail(e.target.value)}
                     placeholder="doctor@prs.com"
+                    autoComplete="email"
                     className="w-full px-3.5 py-2.5 rounded-xl border border-outline bg-surface text-xs outline-none"
                   />
                 </div>
               </div>
 
               <div className="bg-primary/5 p-3.5 rounded-xl border border-primary/20 space-y-1">
-                <label className="font-bold text-primary uppercase block">Doctor Secret Access Code *</label>
+                <label htmlFor="doc-add-passcode" className="font-bold text-primary uppercase block">Doctor Secret Access Code *</label>
                 <input
+                  id="doc-add-passcode"
+                  name="docPasscode"
                   type="text"
                   required
                   value={docPasscode}
@@ -363,18 +380,23 @@ export default function AdminDoctorManagement() {
             <form onSubmit={handleSaveEdit} className="space-y-3.5 text-xs text-on-surface">
               <div className="grid grid-cols-3 gap-2">
                 <div className="col-span-2">
-                  <label className="font-bold text-on-surface-variant uppercase block mb-1">Doctor Name</label>
+                  <label htmlFor="doc-edit-name" className="font-bold text-on-surface-variant uppercase block mb-1">Doctor Name</label>
                   <input
+                    id="doc-edit-name"
+                    name="docName"
                     type="text"
                     required
                     value={docName}
                     onChange={(e) => setDocName(e.target.value)}
+                    autoComplete="name"
                     className="w-full px-3.5 py-2.5 rounded-xl border border-outline bg-surface text-xs outline-none"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-on-surface-variant uppercase block mb-1">Degree</label>
+                  <label htmlFor="doc-edit-degree" className="font-bold text-on-surface-variant uppercase block mb-1">Degree</label>
                   <input
+                    id="doc-edit-degree"
+                    name="docDegree"
                     type="text"
                     value={docDegree}
                     onChange={(e) => setDocDegree(e.target.value)}
@@ -384,8 +406,10 @@ export default function AdminDoctorManagement() {
               </div>
 
               <div>
-                <label className="font-bold text-on-surface-variant uppercase block mb-1">Specialization</label>
+                <label htmlFor="doc-edit-spec" className="font-bold text-on-surface-variant uppercase block mb-1">Specialization</label>
                 <input
+                  id="doc-edit-spec"
+                  name="docSpec"
                   type="text"
                   required
                   value={docSpec}
@@ -395,8 +419,10 @@ export default function AdminDoctorManagement() {
               </div>
 
               <div>
-                <label className="font-bold text-on-surface-variant uppercase block mb-1">Experience / Bio</label>
+                <label htmlFor="doc-edit-exp" className="font-bold text-on-surface-variant uppercase block mb-1">Experience / Bio</label>
                 <input
+                  id="doc-edit-exp"
+                  name="docExperience"
                   type="text"
                   value={docExperience}
                   onChange={(e) => setDocExperience(e.target.value)}
@@ -405,8 +431,10 @@ export default function AdminDoctorManagement() {
               </div>
 
               <div className="bg-primary/5 p-3.5 rounded-xl border border-primary/20 space-y-1">
-                <label className="font-bold text-primary uppercase block">Doctor Access Code</label>
+                <label htmlFor="doc-edit-passcode" className="font-bold text-primary uppercase block">Doctor Access Code</label>
                 <input
+                  id="doc-edit-passcode"
+                  name="docPasscode"
                   type="text"
                   required
                   value={docPasscode}

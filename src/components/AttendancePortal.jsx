@@ -522,8 +522,10 @@ export default function AttendancePortal({ onLogout }) {
 
             <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
               <div>
-                <label className="font-bold text-on-surface-variant uppercase">Doctor Name</label>
+                <label htmlFor="attend-edit-doc" className="font-bold text-on-surface-variant uppercase">Doctor Name</label>
                 <select
+                  id="attend-edit-doc"
+                  name="editDoctorId"
                   value={editDoctorId}
                   onChange={(e) => setEditDoctorId(e.target.value)}
                   className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs font-semibold outline-none"
@@ -538,8 +540,10 @@ export default function AttendancePortal({ onLogout }) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-on-surface-variant uppercase">Date</label>
+                  <label htmlFor="attend-edit-date" className="font-bold text-on-surface-variant uppercase">Date</label>
                   <input
+                    id="attend-edit-date"
+                    name="editDate"
                     type="date"
                     required
                     value={editDate}
@@ -548,8 +552,10 @@ export default function AttendancePortal({ onLogout }) {
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-on-surface-variant uppercase">Shift</label>
+                  <label htmlFor="attend-edit-shift" className="font-bold text-on-surface-variant uppercase">Shift</label>
                   <select
+                    id="attend-edit-shift"
+                    name="editShift"
                     value={editShift}
                     onChange={(e) => setEditShift(e.target.value)}
                     className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs font-semibold outline-none"
@@ -563,7 +569,7 @@ export default function AttendancePortal({ onLogout }) {
               </div>
 
               <div>
-                <label className="font-bold text-on-surface-variant uppercase">Attendance Status</label>
+                <span className="font-bold text-on-surface-variant uppercase block">Attendance Status</span>
                 <div className="grid grid-cols-3 gap-2 mt-1">
                   {['Present', 'Half Day', 'Late', 'On Leave', 'Absent'].map((statusOption) => (
                     <button
@@ -585,8 +591,10 @@ export default function AttendancePortal({ onLogout }) {
               {editStatus !== 'On Leave' && editStatus !== 'Absent' && (
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="font-bold text-on-surface-variant uppercase">Check-In Time</label>
+                    <label htmlFor="attend-edit-checkin" className="font-bold text-on-surface-variant uppercase">Check-In Time</label>
                     <input
+                      id="attend-edit-checkin"
+                      name="editCheckIn"
                       type="text"
                       value={editCheckIn}
                       onChange={(e) => setEditCheckIn(e.target.value)}
@@ -595,8 +603,10 @@ export default function AttendancePortal({ onLogout }) {
                     />
                   </div>
                   <div>
-                    <label className="font-bold text-on-surface-variant uppercase">Check-Out Time</label>
+                    <label htmlFor="attend-edit-checkout" className="font-bold text-on-surface-variant uppercase">Check-Out Time</label>
                     <input
+                      id="attend-edit-checkout"
+                      name="editCheckOut"
                       type="text"
                       value={editCheckOut}
                       onChange={(e) => setEditCheckOut(e.target.value)}
@@ -608,8 +618,10 @@ export default function AttendancePortal({ onLogout }) {
               )}
 
               <div>
-                <label className="font-bold text-on-surface-variant uppercase">Remarks / Notes</label>
+                <label htmlFor="attend-edit-remarks" className="font-bold text-on-surface-variant uppercase">Remarks / Notes</label>
                 <input
+                  id="attend-edit-remarks"
+                  name="editRemarks"
                   type="text"
                   value={editRemarks}
                   onChange={(e) => setEditRemarks(e.target.value)}
