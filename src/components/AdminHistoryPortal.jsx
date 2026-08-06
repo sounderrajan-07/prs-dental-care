@@ -144,6 +144,70 @@ export default function AdminHistoryPortal({ onLogout }) {
     loadHistory();
   };
 
+  const handleExportBackup = () => {
+    try {
+      const backupData = {
+        version: '1.0',
+        exportedAt: new Date().toISOString(),
+        appointments: JSON.parse(localStorage.getItem('prs_dental_appointments_v2') || '[]'),
+        treatmentHistory: JSON.parse(localStorage.getItem('prs_patient_treatment_history_v2') || '[]'),
+        attendance: JSON.parse(localStorage.getItem('prs_doctor_attendance_v1') || '[]'),
+        doctors: JSON.parse(localStorage.getItem('prs_clinic_doctors_v2') || '[]')
+      };
+
+      const dateStr = new Date().toISOString().split('T')[0];
+      const filename = `PRS_Dental_Clinic_Backup_${dateStr}.json`;
+
+      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(backupData, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute('href', dataStr);
+      downloadAnchor.setAttribute('download', filename);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+
+      alert(`✓ Full Clinic Database Backup (${filename}) exported successfully!`);
+    } catch (err) {
+      console.error('Export backup failed:', err);
+      alert('Failed to export backup data.');
+    }
+  };
+
+  const handleImportBackup = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const imported = JSON.parse(event.target.result);
+        if (!imported.appointments && !imported.treatmentHistory && !imported.attendance) {
+          alert('Invalid backup file structure.');
+          return;
+        }
+
+        if (window.confirm('Are you sure you want to restore clinic data from this backup? Existing data will be merged/updated.')) {
+          if (imported.appointments) localStorage.setItem('prs_dental_appointments_v2', JSON.stringify(imported.appointments));
+          if (imported.treatmentHistory) localStorage.setItem('prs_patient_treatment_history_v2', JSON.stringify(imported.treatmentHistory));
+          if (imported.attendance) localStorage.setItem('prs_doctor_attendance_v1', JSON.stringify(imported.attendance));
+          if (imported.doctors) localStorage.setItem('prs_clinic_doctors_v2', JSON.stringify(imported.doctors));
+
+          loadHistory();
+          window.dispatchEvent(new Event('prs_history_updated'));
+          window.dispatchEvent(new Event('prs_appointments_updated'));
+          window.dispatchEvent(new Event('prs_doctors_updated'));
+
+          alert('✓ Clinic database successfully restored from backup!');
+        }
+      } catch (err) {
+        console.error('Import backup failed:', err);
+        alert('Error parsing backup JSON file.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = ''; // Reset input
+  };
+
   // Filter patient history records
   const filteredHistory = historyRecords.filter((rec) => {
     if (doctorFilter !== 'All' && rec.attendingDoctor !== doctorFilter) return false;
@@ -181,13 +245,36 @@ export default function AdminHistoryPortal({ onLogout }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={handleExportBackup}
+            className="px-3.5 py-2.5 border border-outline bg-surface rounded-xl text-xs font-bold text-on-surface hover:bg-surface-container-high transition-colors flex items-center gap-1.5 shadow-xs"
+            title="Download full clinic database backup JSON file"
+          >
+            <span className="material-symbols-outlined text-base">download_for_offline</span>
+            <span>Export Backup</span>
+          </button>
+
+          <label
+            className="px-3.5 py-2.5 border border-outline bg-surface rounded-xl text-xs font-bold text-on-surface hover:bg-surface-container-high transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
+            title="Restore clinic database from backup JSON file"
+          >
+            <span className="material-symbols-outlined text-base">upload_file</span>
+            <span>Restore Backup</span>
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleImportBackup}
+              className="hidden"
+            />
+          </label>
+
           <button
             onClick={() => setShowAddModal(true)}
             className="px-4 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary-hover shadow-md transition-colors flex items-center gap-1.5"
           >
             <span className="material-symbols-outlined text-base">add</span>
-            <span>Add Patient History Record</span>
+            <span>Add Patient History</span>
           </button>
           {onLogout && (
             <button

@@ -97,6 +97,28 @@ export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, 
     fetchAppointments();
   };
 
+  const handleWhatsAppReminder = (apt) => {
+    let cleanPhone = (apt.phone || '').replace(/[^0-9]/g, '');
+    if (cleanPhone.length === 10) cleanPhone = '91' + cleanPhone;
+
+    let text = `*PRS DENTAL CARE - APPOINTMENT CONFIRMATION*\n\n`;
+    text += `Hello *${apt.name}*,\n`;
+    text += `Your dental appointment details are as follows:\n\n`;
+    text += `📅 *Date:* ${apt.date}\n`;
+    text += `⏰ *Time Slot:* ${apt.time || 'As scheduled'}\n`;
+    text += `🩺 *Procedure:* ${apt.service}\n`;
+    text += `👨‍⚕️ *Attending Doctor:* ${apt.preferredDoctor || 'PRS Specialist'}\n`;
+    text += `📍 *Location:* 58/150, Red Hills Road, Kolathur, Chennai - 600099\n\n`;
+    text += `Please reach 10 minutes prior to your slot. For queries, contact +91 72007 18607.\n`;
+    text += `*PRS Dental Care - Multi-Specialty Dental Clinic*`;
+
+    const waUrl = cleanPhone
+      ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(text)}`
+      : `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+
+    window.open(waUrl, '_blank');
+  };
+
   const handleOpenEditModal = (apt) => {
     setEditingApt(apt);
     setRemarksText(apt.doctorRemarks || '');
@@ -379,6 +401,14 @@ export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, 
                   </div>
 
                   <div className="flex gap-2">
+                    <button
+                      onClick={() => handleWhatsAppReminder(apt)}
+                      className="px-3 py-1.5 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 text-xs font-bold rounded-xl transition-colors flex items-center gap-1"
+                      title="Send WhatsApp appointment confirmation to patient"
+                    >
+                      <span className="material-symbols-outlined text-base">chat</span>
+                      <span>WhatsApp</span>
+                    </button>
                     <button
                       onClick={() => handleOpenEditModal(apt)}
                       className="px-3 py-1.5 border border-outline rounded-xl text-xs font-semibold hover:bg-surface-container-high transition-colors flex items-center gap-1"

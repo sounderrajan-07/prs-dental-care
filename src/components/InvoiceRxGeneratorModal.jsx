@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import logoImg from '../../Images/PRS.logo.webp';
 
 function numberToWords(num) {
@@ -136,6 +137,43 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
       setTimeout(() => setShareNotice(''), 6000);
     } catch (err) {
       console.error('Error generating document image:', err);
+    } finally {
+      setIsGeneratingDoc(false);
+    }
+  };
+
+  const handleDownloadDocumentPDF = async () => {
+    try {
+      setIsGeneratingDoc(true);
+      setShareNotice('');
+      const canvas = await generateDocumentCanvas();
+      if (!canvas) {
+        setIsGeneratingDoc(false);
+        return;
+      }
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const imgWidth = 210; // A4 width mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
+      const docName = activeTab === 'rx' ? 'Prescription' : 'Invoice';
+      const cleanName = (patientName || 'Patient').replace(/[^a-zA-Z0-9]/g, '_');
+      const pdfFilename = `PRS_Dental_${docName}_${cleanName}.pdf`;
+
+      pdf.save(pdfFilename);
+
+      setShareNotice(`✓ PDF Document (${pdfFilename}) downloaded successfully!`);
+      setTimeout(() => setShareNotice(''), 6000);
+    } catch (err) {
+      console.error('Error generating PDF:', err);
     } finally {
       setIsGeneratingDoc(false);
     }
@@ -808,13 +846,23 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
           
           <div className="flex flex-wrap gap-2 items-center">
             <button
+              onClick={handleDownloadDocumentPDF}
+              disabled={isGeneratingDoc}
+              className="px-4 py-2 bg-primary/10 text-primary hover:bg-primary/20 border border-primary/30 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-xs"
+              title="Download official PDF Document"
+            >
+              <span className="material-symbols-outlined text-base">picture_as_pdf</span>
+              <span>{isGeneratingDoc ? 'Generating PDF...' : 'Download PDF Document'}</span>
+            </button>
+
+            <button
               onClick={handleDownloadDocumentImage}
               disabled={isGeneratingDoc}
               className="px-4 py-2 bg-surface-container hover:bg-surface-container-highest border border-outline rounded-xl text-xs font-bold text-on-surface transition-colors flex items-center gap-1.5 shadow-xs"
               title="Download exact document preview as PNG image"
             >
               <span className="material-symbols-outlined text-base">download</span>
-              <span>{isGeneratingDoc ? 'Generating Image...' : 'Download Document (PNG)'}</span>
+              <span>{isGeneratingDoc ? 'Generating Image...' : 'Download PNG Image'}</span>
             </button>
 
             <button
@@ -824,7 +872,7 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
               title="Share exact visual document image on WhatsApp"
             >
               <span className="material-symbols-outlined text-base">chat</span>
-              <span>{isGeneratingDoc ? 'Capturing Document Image...' : 'Share Exact Document via WhatsApp'}</span>
+              <span>{isGeneratingDoc ? 'Capturing Document Image...' : 'Share via WhatsApp'}</span>
             </button>
           </div>
         </div>
