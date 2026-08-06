@@ -344,28 +344,40 @@ export default function AdminHistoryPortal({ onLogout }) {
       {/* Main Patient History Management Table */}
       <div className="bg-surface-container rounded-2xl border border-outline-variant p-6 shadow-sm space-y-4">
         
-        {/* Table Filters & Search */}
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between pb-3 border-b border-outline-variant">
+        {/* Table Title & Download Action Bar */}
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between pb-4 border-b border-outline-variant">
           <div>
             <h3 className="text-lg font-bold font-serif text-on-surface">Patient Treatment History Log</h3>
             <p className="text-xs text-on-surface-variant">Detailed procedure log with duration, attending doctor & clinical notes</p>
           </div>
 
-          <div className="flex flex-wrap gap-3 items-center w-full md:w-auto">
+          <button
+            onClick={handleDownloadExcel}
+            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl flex items-center gap-2 shadow-md transition-all cursor-pointer hover:shadow-lg"
+            title="Download Patient Treatment History Log in Formatted Excel (.xls)"
+          >
+            <span className="material-symbols-outlined text-lg">table_chart</span>
+            <span>Download Formatted Excel (.xls)</span>
+          </button>
+        </div>
+
+        {/* Filters & Search Controls Row */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-1 pb-2">
+          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
             {/* Search input */}
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search patient, phone, doctor..."
-              className="px-3.5 py-1.5 rounded-xl border border-outline bg-surface text-xs outline-none focus:ring-2 focus:ring-primary w-full md:w-60"
+              className="px-3.5 py-2 rounded-xl border border-outline bg-surface text-xs outline-none focus:ring-2 focus:ring-primary w-full sm:w-64"
             />
 
             {/* Doctor Filter */}
             <select
               value={doctorFilter}
               onChange={(e) => setDoctorFilter(e.target.value)}
-              className="px-3 py-1.5 rounded-xl border border-outline bg-surface text-xs font-semibold outline-none"
+              className="px-3.5 py-2 rounded-xl border border-outline bg-surface text-xs font-semibold outline-none"
             >
               <option value="All">All Attending Doctors</option>
               {doctorsList.map((d) => (
@@ -379,22 +391,16 @@ export default function AdminHistoryPortal({ onLogout }) {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-1.5 rounded-xl border border-outline bg-surface text-xs font-semibold outline-none"
+              className="px-3.5 py-2 rounded-xl border border-outline bg-surface text-xs font-semibold outline-none"
             >
               <option value="All">All Statuses</option>
               <option value="Completed">Completed</option>
               <option value="In Progress">In Progress</option>
             </select>
+          </div>
 
-            {/* Download Formatted Excel Button */}
-            <button
-              onClick={handleDownloadExcel}
-              className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-sm transition-colors"
-              title="Download Patient Treatment History Log in Formatted Excel (.xls)"
-            >
-              <span className="material-symbols-outlined text-base">table_chart</span>
-              <span>Download Formatted Excel (.xls)</span>
-            </button>
+          <div className="text-xs font-semibold text-on-surface-variant">
+            Showing <strong className="text-primary">{filteredHistory.length}</strong> of {historyRecords.length} records
           </div>
         </div>
 
