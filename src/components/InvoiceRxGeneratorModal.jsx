@@ -184,7 +184,27 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
         cleanPhone = '91' + cleanPhone;
       }
 
-      // Direct WhatsApp URL to patient's exact phone number without any extra text message
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const file = new File([blob], filename, { type: 'image/png' });
+
+      // On mobile devices, use native Web Share API to attach document image directly in WhatsApp
+      if (isMobile && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: `PRS Dental Care - ${docTypeLabel}`
+          });
+          setIsGeneratingDoc(false);
+          return;
+        } catch (shareErr) {
+          if (shareErr.name === 'AbortError') {
+            setIsGeneratingDoc(false);
+            return;
+          }
+        }
+      }
+
+      // On Desktop: Direct WhatsApp URL targeting patient's phone number without any text parameter
       const waUrl = cleanPhone ? `https://api.whatsapp.com/send?phone=${cleanPhone}` : `https://api.whatsapp.com/send`;
       window.open(waUrl, '_blank');
 
