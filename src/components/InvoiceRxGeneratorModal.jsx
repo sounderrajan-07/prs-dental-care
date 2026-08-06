@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import html2canvas from 'html2canvas';
 import logoImg from '../../Images/PRS.logo.webp';
 
 function numberToWords(num) {
@@ -20,8 +21,11 @@ function numberToWords(num) {
 }
 
 export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData = null }) {
-  const [activeTab, setActiveTab] = useState('invoice'); // 'invoice' or 'rx'
+  const [activeTab, setActiveTab] = useState('rx'); // 'invoice' or 'rx'
   const [viewMode, setViewMode] = useState('edit'); // 'edit' or 'preview'
+  const documentRef = useRef(null);
+  const [isGeneratingDoc, setIsGeneratingDoc] = useState(false);
+  const [shareNotice, setShareNotice] = useState('');
 
   // Metadata State
   const [invoiceNo] = useState(() => `PRS-INV-${Math.floor(100000 + Math.random() * 900000)}`);
@@ -88,43 +92,132 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
   const subtotal = invoiceItems.reduce((acc, item) => acc + (Number(item.qty) * Number(item.rate) || 0), 0);
   const grandTotal = Math.max(0, subtotal - Number(discount || 0));
 
-  const handlePrint = () => {
-    setViewMode('preview');
-    setTimeout(() => {
-      window.print();
-    }, 150);
-  };
-
-  const handleWhatsAppShare = () => {
-    const cleanPhone = phone.replace(/[^0-9]/g, '');
-    let text = `*PRS DENTAL CARE - ${activeTab === 'rx' ? 'DIGITAL PRESCRIPTION' : 'BILLING INVOICE'}*\n\n`;
-    text += `*Patient:* ${patientName}\n`;
-    text += `*Doctor:* ${doctorName}\n`;
-    text += `*Date:* ${invoiceDate}\n`;
-
-    if (activeTab === 'rx') {
-      text += `*Diagnosis:* ${diagnosis}\n\n`;
-      text += `*Prescribed Medications:*\n`;
-      medications.forEach((m, idx) => {
-        if (m.drug) text += `${idx + 1}. ${m.drug} - ${m.dosage} (${m.duration})\n`;
-      });
-      text += `\n*Advice:* ${clinicalAdvice}\n`;
-      text += `*Follow-up:* ${nextVisitDate}\n\n`;
-      text += `*PRS Dental Care, Kolathur, Chennai* | Contact: +91 72007 18607`;
-    } else {
-      text += `*Invoice No:* ${invoiceNo}\n\n`;
-      text += `*Itemized Bill Summary:*\n`;
-      invoiceItems.forEach((item) => {
-        text += `- ${item.description} (x${item.qty}): ₹${Number(item.qty) * Number(item.rate)}\n`;
-      });
-      if (discount > 0) text += `Discount: -₹${discount}\n`;
-      text += `*Total Amount Payable:* ₹${grandTotal.toLocaleString('en-IN')}\n`;
-      text += `*Payment Status:* ${paymentStatus} (${paymentMode})\n\n`;
-      text += `Thank you for choosing PRS Dental Care, Kolathur, Chennai!`;
+  const generateDocumentCanvas = async () => {
+    let prevView = viewMode;
+    if (prevView === 'edit') {
+      setViewMode('preview');
+      await new Promise((resolve) => setTimeout(resolve, 250));
     }
 
-    const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
-    window.open(waUrl, '_blank');
+    if (!documentRef.current) return null;
+
+    const canvas = await html2canvas(documentRef.current, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false
+    });
+    return canvas;
+  };
+
+  const handleDownloadDocumentImage = async () => {
+    try {
+      setIsGeneratingDoc(true);
+      setShareNotice('');
+      const canvas = await generateDocumentCanvas();
+      if (!canvas) {
+        setIsGeneratingDoc(false);
+        return;
+      }
+
+      const docName = activeTab === 'rx' ? 'Prescription' : 'Invoice';
+      const cleanName = (patientName || 'Patient').replace(/[^a-zA-Z0-9]/g, '_');
+      const filename = `PRS_Dental_${docName}_${cleanName}.png`;
+
+      const dataUrl = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setShareNotice(`✓ Exact document image (${filename}) downloaded to device!`);
+      setTimeout(() => setShareNotice(''), 6000);
+    } catch (err) {
+      console.error('Error generating document image:', err);
+    } finally {
+      setIsGeneratingDoc(false);
+    }
+  };
+
+  const handleWhatsAppShareDocument = async () => {
+    try {
+      setIsGeneratingDoc(true);
+      setShareNotice('');
+
+      const canvas = await generateDocumentCanvas();
+      if (!canvas) {
+        setIsGeneratingDoc(false);
+        return;
+      }
+
+      const docTypeLabel = activeTab === 'rx' ? 'Digital Prescription' : 'Billing Invoice';
+      const docName = activeTab === 'rx' ? 'Prescription' : 'Invoice';
+      const cleanName = (patientName || 'Patient').replace(/[^a-zA-Z0-9]/g, '_');
+      const filename = `PRS_Dental_${docName}_${cleanName}.png`;
+
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+      if (!blob) {
+        setIsGeneratingDoc(false);
+        return;
+      }
+
+      const file = new File([blob], filename, { type: 'image/png' });
+
+      // Try native Web Share API first (supported on mobile browsers like Android Chrome / iOS Safari)
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: `PRS Dental Care - ${docTypeLabel}`,
+            text: `Patient: ${patientName} | PRS Dental Care ${docTypeLabel}`
+          });
+          setIsGeneratingDoc(false);
+          return;
+        } catch (shareErr) {
+          if (shareErr.name === 'AbortError') {
+            setIsGeneratingDoc(false);
+            return;
+          }
+        }
+      }
+
+      // Desktop / Browser Fallback:
+      // 1. Download the exact high-res PNG image
+      const dataUrl = canvas.toDataURL('image/png');
+      const downloadLink = document.createElement('a');
+      downloadLink.download = filename;
+      downloadLink.href = dataUrl;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+
+      // 2. Open WhatsApp Web / App with clean summary message
+      const cleanPhone = phone.replace(/[^0-9]/g, '');
+      let text = `*PRS DENTAL CARE - ${docTypeLabel.toUpperCase()}*\n\n`;
+      text += `👤 *Patient:* ${patientName}\n`;
+      text += `👨‍⚕️ *Doctor:* ${doctorName}\n`;
+      text += `📅 *Date:* ${invoiceDate}\n`;
+      if (activeTab === 'rx') {
+        text += `🩺 *Diagnosis:* ${diagnosis}\n`;
+      } else {
+        text += `🧾 *Invoice Serial:* ${invoiceNo}\n`;
+        text += `💰 *Grand Total:* ₹${grandTotal.toLocaleString('en-IN')}\n`;
+      }
+      text += `\n📁 *Document Image:* ${filename} (Downloaded to your device)\n`;
+      text += `*PRS Dental Care, Kolathur, Chennai* | Contact: +91 72007 18607`;
+
+      const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
+      window.open(waUrl, '_blank');
+
+      setShareNotice(`✓ Exact Document Image (${filename}) downloaded! Please attach the image in WhatsApp.`);
+      setTimeout(() => setShareNotice(''), 7000);
+    } catch (err) {
+      console.error('Error sharing document on WhatsApp:', err);
+    } finally {
+      setIsGeneratingDoc(false);
+    }
   };
 
   return (
@@ -515,7 +608,7 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
 
         {/* Live Printable Document Area (Visible in Preview Mode & Always printed via @media print) */}
         <div className={`printable-document-wrapper p-4 sm:p-6 overflow-y-auto flex-1 bg-slate-100 ${viewMode === 'edit' ? 'screen-only hidden' : ''}`}>
-          <div className="printable-document bg-white text-slate-900 font-sans p-6 sm:p-8 border border-slate-300 rounded-xl shadow-md max-w-3xl mx-auto my-0">
+          <div ref={documentRef} className="printable-document bg-white text-slate-900 font-sans p-6 sm:p-8 border border-slate-300 rounded-xl shadow-md max-w-3xl mx-auto my-0">
             
             {/* Clinic Letterhead Header */}
             <div className="border-b-2 border-teal-700 pb-4 mb-4 flex flex-col sm:flex-row justify-between items-start gap-4">
@@ -678,6 +771,13 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
           </div>
         </div>
 
+        {shareNotice && (
+          <div className="screen-only p-3 bg-emerald-500/10 border-t border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs font-bold text-center flex items-center justify-center gap-1.5 animate-fadeIn">
+            <span className="material-symbols-outlined text-base">check_circle</span>
+            <span>{shareNotice}</span>
+          </div>
+        )}
+
         {/* Footer Actions - Screen Only */}
         <div className="screen-only bg-surface-container-high p-4 border-t border-outline-variant flex flex-wrap gap-3 items-center justify-between">
           <button
@@ -687,13 +787,25 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
             Close
           </button>
           
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 items-center">
             <button
-              onClick={handleWhatsAppShare}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition-colors"
+              onClick={handleDownloadDocumentImage}
+              disabled={isGeneratingDoc}
+              className="px-4 py-2 bg-surface-container hover:bg-surface-container-highest border border-outline rounded-xl text-xs font-bold text-on-surface transition-colors flex items-center gap-1.5 shadow-xs"
+              title="Download exact document preview as PNG image"
+            >
+              <span className="material-symbols-outlined text-base">download</span>
+              <span>{isGeneratingDoc ? 'Generating Image...' : 'Download Document (PNG)'}</span>
+            </button>
+
+            <button
+              onClick={handleWhatsAppShareDocument}
+              disabled={isGeneratingDoc}
+              className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-md transition-colors"
+              title="Share exact visual document image on WhatsApp"
             >
               <span className="material-symbols-outlined text-base">chat</span>
-              <span>Share via WhatsApp</span>
+              <span>{isGeneratingDoc ? 'Capturing Document Image...' : 'Share Exact Document via WhatsApp'}</span>
             </button>
           </div>
         </div>
