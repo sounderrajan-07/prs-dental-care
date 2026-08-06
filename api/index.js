@@ -1,119 +1,224 @@
 import express from 'express';
 import cors from 'cors';
+import sql, { isDbConnected, initDbSchema } from './db.js';
 
 const app = express();
 
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
-// In-memory appointments store (populated live when users submit bookings)
-let appointments = [];
+// In-memory fallback stores (used if NEON_DATABASE_URL is not set yet)
+let memoryStore = {
+  appointments: [],
+  doctors: [],
+  attendance: [],
+  patientHistory: [],
+  feedback: []
+};
 
-// Helper function for email notification log
-function sendStatusEmailNotification(appointment, status) {
-  const recipient = appointment.email || 'patient@example.com';
-  console.log(`[EMAIL DISPATCH] Sent ${status} confirmation email to: ${recipient}`);
-  return {
-    sent: true,
-    recipient: recipient,
-    subject: `PRS Dental Care: Your Appointment Request is ${status.toUpperCase()}`,
-    body: `Dear ${appointment.name},\n\nYour appointment for ${appointment.service} on ${appointment.date} (${appointment.timeSlot}) has been ${status.toUpperCase()} by our clinic team.\n\nThank you,\nPRS Dental Care Team`
-  };
-}
+// Initialize Neon DB Schema on server boot
+initDbSchema().catch((err) => console.log('Schema init fallback:', err));
 
-// GET /api/appointments - Fetch all appointments
-app.get('/api/appointments', (req, res) => {
+// ----------------------------------------------------
+// 0. HEALTH CHECK & NEON DB STATUS
+// ----------------------------------------------------
+app.get('/api/db-status', async (req, res) => {
+  const connected = isDbConnected();
+  if (connected && sql) {
+    try {
+      const [{ count: aptCount }] = await sql`SELECT count(*)::int FROM appointments`;
+      const [{ count: docCount }] = await sql`SELECT count(*)::int FROM doctors`;
+      const [{ count: attCount }] = await sql`SELECT count(*)::int FROM attendance`;
+      return res.status(200).json({
+        success: true,
+        provider: 'Neon PostgreSQL Serverless',
+        connected: true,
+        tableCounts: {
+          appointments: aptCount,
+          doctors: docCount,
+          attendance: attCount
+        }
+      });
+    } catch (err) {
+      return res.status(200).json({
+        success: true,
+        provider: 'Neon PostgreSQL',
+        connected: true,
+        error: err.message
+      });
+    }
+  }
+
   res.status(200).json({
     success: true,
-    count: appointments.length,
-    data: appointments
+    provider: 'Local Storage / In-Memory Fallback',
+    connected: false,
+    message: 'Set NEON_DATABASE_URL environment variable in Vercel to activate Neon PostgreSQL.'
   });
 });
 
-// POST /api/appointments - Create new appointment
-app.post('/api/appointments', (req, res) => {
-  const { name, phone, email, service, preferredDoctor, date, timeSlot, notes } = req.body;
+// ----------------------------------------------------
+// 1. APPOINTMENTS ENDPOINTS
+// ----------------------------------------------------
+app.get('/api/appointments', async (req, res) => {
+  if (sql) {
+    try {
+      const rows = await sql`SELECT * FROM appointments ORDER BY created_at DESC`;
+      return res.status(200).json({ success: true, count: rows.length, data: rows });
+    } catch (err) {
+      console.error('Fetch appointments error:', err);
+    }
+  }
+  res.status(200).json({ success: true, count: memoryStore.appointments.length, data: memoryStore.appointments });
+});
 
+app.post('/api/appointments', async (req, res) => {
+  const { name, phone, email, service, preferredDoctor, date, timeSlot, notes } = req.body;
   if (!name || !phone || !service || !date) {
-    return res.status(400).json({
-      success: false,
-      message: 'Please provide required fields: name, phone, service, date'
-    });
+    return res.status(400).json({ success: false, message: 'Missing required fields: name, phone, service, date' });
   }
 
-  const newAppointment = {
-    id: `APT-${1000 + appointments.length + 1}`,
+  const id = `APT-${Date.now().toString().slice(-6)}`;
+  const newApt = {
+    id,
     name,
     phone,
     email: email || '',
     service,
-    preferredDoctor: preferredDoctor || 'Any Available Specialist',
+    preferred_doctor: preferredDoctor || 'Any Available Specialist',
     date,
-    timeSlot: timeSlot || '10:00 AM - 11:00 AM',
+    time_slot: timeSlot || '10:00 AM - 11:00 AM',
     notes: notes || '',
     status: 'Pending',
-    createdAt: new Date().toISOString()
+    created_at: new Date().toISOString()
   };
 
-  appointments.unshift(newAppointment);
+  if (sql) {
+    try {
+      await sql`
+        INSERT INTO appointments (id, name, phone, email, service, preferred_doctor, date, time_slot, notes, status)
+        VALUES (${newApt.id}, ${newApt.name}, ${newApt.phone}, ${newApt.email}, ${newApt.service}, ${newApt.preferred_doctor}, ${newApt.date}, ${newApt.time_slot}, ${newApt.notes}, ${newApt.status})
+      `;
+      return res.status(201).json({ success: true, message: 'Appointment created in Neon DB', data: newApt });
+    } catch (err) {
+      console.error('Insert appointment error:', err);
+    }
+  }
 
-  res.status(201).json({
-    success: true,
-    message: 'Appointment request submitted successfully',
-    data: newAppointment
-  });
+  memoryStore.appointments.unshift(newApt);
+  res.status(201).json({ success: true, message: 'Appointment saved', data: newApt });
 });
 
-// PUT /api/appointments/:id/status - Approve or reject appointment
-app.put('/api/appointments/:id/status', (req, res) => {
+app.put('/api/appointments/:id/status', async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
-  if (!['Approved', 'Rejected', 'Pending'].includes(status)) {
-    return res.status(400).json({
-      success: false,
-      message: 'Invalid status value. Must be Approved, Rejected, or Pending.'
-    });
+  if (sql) {
+    try {
+      await sql`UPDATE appointments SET status = ${status} WHERE id = ${id}`;
+      return res.status(200).json({ success: true, message: `Appointment ${id} status updated to ${status}` });
+    } catch (err) {
+      console.error('Update appointment status error:', err);
+    }
   }
 
-  const appointment = appointments.find((apt) => apt.id === id);
-
-  if (!appointment) {
-    return res.status(404).json({
-      success: false,
-      message: `Appointment with ID ${id} not found.`
-    });
-  }
-
-  appointment.status = status;
-  const emailResult = sendStatusEmailNotification(appointment, status);
-
-  res.status(200).json({
-    success: true,
-    message: `Appointment ${id} status updated to ${status}`,
-    emailSent: emailResult.sent,
-    emailRecipient: emailResult.recipient,
-    data: appointment
-  });
+  const item = memoryStore.appointments.find((a) => a.id === id);
+  if (item) item.status = status;
+  res.status(200).json({ success: true, message: `Updated status for ${id}` });
 });
 
-// DELETE /api/appointments/:id - Delete appointment
-app.delete('/api/appointments/:id', (req, res) => {
+app.delete('/api/appointments/:id', async (req, res) => {
   const { id } = req.params;
-  const initialLength = appointments.length;
-  appointments = appointments.filter((apt) => apt.id !== id);
+  if (sql) {
+    try {
+      await sql`DELETE FROM appointments WHERE id = ${id}`;
+      return res.status(200).json({ success: true, message: `Appointment ${id} deleted` });
+    } catch (err) {
+      console.error('Delete appointment error:', err);
+    }
+  }
+  memoryStore.appointments = memoryStore.appointments.filter((a) => a.id !== id);
+  res.status(200).json({ success: true, message: `Appointment ${id} deleted` });
+});
 
-  if (appointments.length === initialLength) {
-    return res.status(404).json({
-      success: false,
-      message: `Appointment with ID ${id} not found.`
-    });
+// ----------------------------------------------------
+// 2. DOCTORS ENDPOINTS
+// ----------------------------------------------------
+app.get('/api/doctors', async (req, res) => {
+  if (sql) {
+    try {
+      const rows = await sql`SELECT * FROM doctors ORDER BY created_at ASC`;
+      return res.status(200).json({ success: true, count: rows.length, data: rows });
+    } catch (err) {
+      console.error('Fetch doctors error:', err);
+    }
+  }
+  res.status(200).json({ success: true, data: memoryStore.doctors });
+});
+
+app.post('/api/doctors', async (req, res) => {
+  const { name, degree, specialization, experience, phone, email, passcode } = req.body;
+  const id = `doc_${Date.now()}`;
+  const newDoc = { id, name, degree: degree || '', specialization, experience: experience || '', phone: phone || '', email: email || '', passcode };
+
+  if (sql) {
+    try {
+      await sql`
+        INSERT INTO doctors (id, name, degree, specialization, experience, phone, email, passcode)
+        VALUES (${newDoc.id}, ${newDoc.name}, ${newDoc.degree}, ${newDoc.specialization}, ${newDoc.experience}, ${newDoc.phone}, ${newDoc.email}, ${newDoc.passcode})
+      `;
+      return res.status(201).json({ success: true, message: 'Doctor saved in Neon DB', data: newDoc });
+    } catch (err) {
+      console.error('Insert doctor error:', err);
+    }
   }
 
-  res.status(200).json({
-    success: true,
-    message: `Appointment ${id} deleted successfully.`
-  });
+  memoryStore.doctors.push(newDoc);
+  res.status(201).json({ success: true, data: newDoc });
+});
+
+// ----------------------------------------------------
+// 3. ATTENDANCE ENDPOINTS
+// ----------------------------------------------------
+app.get('/api/attendance', async (req, res) => {
+  if (sql) {
+    try {
+      const rows = await sql`SELECT * FROM attendance ORDER BY date DESC, marked_at DESC`;
+      return res.status(200).json({ success: true, count: rows.length, data: rows });
+    } catch (err) {
+      console.error('Fetch attendance error:', err);
+    }
+  }
+  res.status(200).json({ success: true, data: memoryStore.attendance });
+});
+
+app.post('/api/attendance', async (req, res) => {
+  const { doctorId, doctorName, specialization, date, shift, status, checkInTime, checkOutTime, workingHours, remarks } = req.body;
+  const id = `ATT-${doctorId}-${date}`;
+  const entry = { id, doctor_id: doctorId, doctor_name: doctorName, specialization, date, shift, status, check_in_time: checkInTime, check_out_time: checkOutTime, working_hours: workingHours, remarks };
+
+  if (sql) {
+    try {
+      await sql`
+        INSERT INTO attendance (id, doctor_id, doctor_name, specialization, date, shift, status, check_in_time, check_out_time, working_hours, remarks)
+        VALUES (${entry.id}, ${entry.doctor_id}, ${entry.doctor_name}, ${entry.specialization}, ${entry.date}, ${entry.shift}, ${entry.status}, ${entry.check_in_time}, ${entry.check_out_time}, ${entry.working_hours}, ${entry.remarks})
+        ON CONFLICT (id) DO UPDATE SET
+          shift = EXCLUDED.shift,
+          status = EXCLUDED.status,
+          check_in_time = EXCLUDED.check_in_time,
+          check_out_time = EXCLUDED.check_out_time,
+          working_hours = EXCLUDED.working_hours,
+          remarks = EXCLUDED.remarks,
+          marked_at = CURRENT_TIMESTAMP
+      `;
+      return res.status(200).json({ success: true, message: 'Attendance record upserted in Neon DB', data: entry });
+    } catch (err) {
+      console.error('Attendance insert error:', err);
+    }
+  }
+
+  memoryStore.attendance.unshift(entry);
+  res.status(200).json({ success: true, data: entry });
 });
 
 export default app;
