@@ -361,14 +361,14 @@ export default function AttendancePortal({ onLogout }) {
               {doctorSummaries.map((summary) => (
                 <div
                   key={summary.doctorId}
-                  className="p-4 bg-surface rounded-xl border border-outline-variant/80 flex flex-wrap gap-4 items-center justify-between"
+                  className="p-4 bg-surface rounded-xl border border-outline-variant/80 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between"
                 >
                   <div>
                     <h4 className="font-bold text-sm text-on-surface">{summary.doctorName}</h4>
                     <p className="text-[11px] text-on-surface-variant">{summary.specialization}</p>
                   </div>
 
-                  <div className="flex items-center gap-3 text-center">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center w-full sm:w-auto mt-1 sm:mt-0">
                     <div className="px-2.5 py-1 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
                       <span className="block text-[10px] text-emerald-700 dark:text-emerald-300 uppercase font-bold">Present</span>
                       <span className="font-extrabold text-sm text-emerald-700 dark:text-emerald-300">{summary.presentCount}</span>

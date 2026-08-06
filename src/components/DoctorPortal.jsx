@@ -182,11 +182,11 @@ export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, 
         </div>
 
         {/* Header Actions & Admin Doctor Dropdown */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
           {/* Admin Doctor Switcher Dropdown Button */}
           {isAdmin && (
-            <div className="flex items-center gap-2 bg-surface p-1.5 rounded-xl border border-primary/30 shadow-xs">
-              <label htmlFor="admin-doctor-dropdown" className="text-xs font-bold text-primary flex items-center gap-1 pl-1">
+            <div className="flex flex-wrap items-center gap-2 bg-surface p-1.5 rounded-xl border border-primary/30 shadow-xs w-full sm:w-auto">
+              <label htmlFor="admin-doctor-dropdown" className="text-xs font-bold text-primary flex items-center gap-1 pl-1 shrink-0">
                 <span className="material-symbols-outlined text-base">swap_horiz</span>
                 <span>Select View:</span>
               </label>
@@ -194,7 +194,7 @@ export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, 
                 id="admin-doctor-dropdown"
                 value={selectedDoctorId}
                 onChange={(e) => setSelectedDoctorId(e.target.value)}
-                className="bg-surface-container-high text-xs font-bold text-on-surface px-3 py-1.5 rounded-lg border border-outline outline-none focus:ring-2 focus:ring-primary cursor-pointer"
+                className="bg-surface-container-high text-xs font-bold text-on-surface px-3 py-1.5 rounded-lg border border-outline outline-none focus:ring-2 focus:ring-primary cursor-pointer w-full sm:w-auto max-w-full"
               >
                 <option value="all">🌐 All Doctors (Combined View)</option>
                 {allAvailableDoctors.map((doc) => (
@@ -379,7 +379,7 @@ export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, 
 
                 {/* Actions */}
                 <div className="mt-4 pt-3 border-t border-outline-variant/60 flex flex-wrap gap-2 items-center justify-between">
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {apt.status !== 'Approved' && (
                       <button
                         onClick={() => handleApprove(apt)}
@@ -400,7 +400,7 @@ export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, 
                     )}
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => handleWhatsAppReminder(apt)}
                       className="px-3 py-1.5 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 text-xs font-bold rounded-xl transition-colors flex items-center gap-1"
@@ -414,7 +414,7 @@ export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, 
                       className="px-3 py-1.5 border border-outline rounded-xl text-xs font-semibold hover:bg-surface-container-high transition-colors flex items-center gap-1"
                     >
                       <span className="material-symbols-outlined text-base">edit</span>
-                      <span>Edit Entry</span>
+                      <span>Edit</span>
                     </button>
                     <button
                       onClick={() => handleDeleteAppointment(apt)}

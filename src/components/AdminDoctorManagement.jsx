@@ -173,20 +173,20 @@ export default function AdminDoctorManagement() {
                 </span>
               </div>
 
-              <div className="mt-3 space-y-1.5 text-xs text-on-surface-variant">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-on-surface">Specialty:</span>
-                  <span className="text-primary font-semibold">{doc.specialization}</span>
+              <div className="mt-3 space-y-2 text-xs text-on-surface-variant">
+                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                  <span className="font-semibold text-on-surface shrink-0">Specialty:</span>
+                  <span className="text-primary font-semibold break-words">{doc.specialization}</span>
                 </div>
                 {doc.experience && (
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-on-surface">Experience/Bio:</span>
-                    <span>{doc.experience}</span>
+                  <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                    <span className="font-semibold text-on-surface shrink-0">Experience/Bio:</span>
+                    <span className="break-words">{doc.experience}</span>
                   </div>
                 )}
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-on-surface">Contact:</span>
-                  <span>📞 {doc.phone || 'Not set'} • ✉️ {doc.email || 'Not set'}</span>
+                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                  <span className="font-semibold text-on-surface shrink-0">Contact:</span>
+                  <span className="break-all font-medium">📞 {doc.phone || 'Not set'} • ✉️ {doc.email || 'Not set'}</span>
                 </div>
 
                 {/* Access Code Box */}
