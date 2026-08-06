@@ -124,6 +124,30 @@ export const saveAttendanceEntry = (entryData) => {
   }
 };
 
+export const updateAttendanceEntry = (id, updates) => {
+  try {
+    const current = getStoredAttendance();
+    const updated = current.map((rec) => (rec.id === id ? { ...rec, ...updates } : rec));
+    localStorage.setItem(ATTENDANCE_STORAGE_KEY, JSON.stringify(updated));
+    return updated;
+  } catch (err) {
+    console.error('Error updating attendance entry:', err);
+    return null;
+  }
+};
+
+export const deleteAttendanceEntry = (id) => {
+  try {
+    const current = getStoredAttendance();
+    const updated = current.filter((rec) => rec.id !== id);
+    localStorage.setItem(ATTENDANCE_STORAGE_KEY, JSON.stringify(updated));
+    return updated;
+  } catch (err) {
+    console.error('Error deleting attendance entry:', err);
+    return null;
+  }
+};
+
 export const getAttendanceSummaryByDoctor = (year, monthStr) => {
   const allRecords = getStoredAttendance();
   const filtered = allRecords.filter((rec) => {

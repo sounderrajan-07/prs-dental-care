@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {
   getStoredAttendance,
   saveAttendanceEntry,
+  updateAttendanceEntry,
+  deleteAttendanceEntry,
   getAttendanceSummaryByDoctor,
   downloadMonthlyAttendanceExcel
 } from '../utils/attendanceStorage';
@@ -23,6 +25,16 @@ export default function AttendancePortal({ onLogout }) {
   const [formCheckOut, setFormCheckOut] = useState('08:00 PM');
   const [formRemarks, setFormRemarks] = useState('On Time');
   const [successMessage, setSuccessMessage] = useState('');
+
+  // Edit Modal State
+  const [editingAttendance, setEditingAttendance] = useState(null);
+  const [editDoctorId, setEditDoctorId] = useState('');
+  const [editDate, setEditDate] = useState('');
+  const [editShift, setEditShift] = useState('Full Day');
+  const [editStatus, setEditStatus] = useState('Present');
+  const [editCheckIn, setEditCheckIn] = useState('09:30 AM');
+  const [editCheckOut, setEditCheckOut] = useState('08:00 PM');
+  const [editRemarks, setEditRemarks] = useState('');
 
   const loadAttendance = () => {
     const data = getStoredAttendance();
@@ -65,6 +77,62 @@ export default function AttendancePortal({ onLogout }) {
 
     loadAttendance();
     setSuccessMessage(`✓ Attendance recorded for ${docObj.name} on ${formDate}`);
+    setTimeout(() => setSuccessMessage(''), 4000);
+  };
+
+  const handleOpenEditModal = (rec) => {
+    setEditingAttendance(rec);
+    setEditDoctorId(rec.doctorId || doctorsList[0]?.id || 'doc1');
+    setEditDate(rec.date || new Date().toISOString().split('T')[0]);
+    setEditShift(rec.shift || 'Full Day');
+    setEditStatus(rec.status || 'Present');
+    setEditCheckIn(rec.checkInTime || '09:30 AM');
+    setEditCheckOut(rec.checkOutTime || '08:00 PM');
+    setEditRemarks(rec.remarks || '');
+  };
+
+  const handleSaveEdit = (e) => {
+    e.preventDefault();
+    if (!editingAttendance) return;
+
+    const docObj = doctorsList.find((d) => d.id === editDoctorId) || doctorsList[0];
+    const workingHours =
+      editStatus === 'Present'
+        ? '10.5 hrs'
+        : editStatus === 'Half Day'
+        ? '4.5 hrs'
+        : editStatus === 'Late'
+        ? '9.0 hrs'
+        : '0 hrs';
+
+    updateAttendanceEntry(editingAttendance.id, {
+      doctorId: docObj.id,
+      doctorName: docObj.name,
+      specialization: docObj.specialization,
+      date: editDate,
+      shift: editShift,
+      status: editStatus,
+      checkInTime: editStatus === 'On Leave' || editStatus === 'Absent' ? '-' : editCheckIn,
+      checkOutTime: editStatus === 'On Leave' || editStatus === 'Absent' ? '-' : editCheckOut,
+      workingHours,
+      remarks: editRemarks
+    });
+
+    setEditingAttendance(null);
+    loadAttendance();
+    setSuccessMessage(`✓ Attendance record updated for ${docObj.name}`);
+    setTimeout(() => setSuccessMessage(''), 4000);
+  };
+
+  const handleDeleteAttendance = (rec) => {
+    const isConfirmed = window.confirm(
+      `Are you sure you want to delete the attendance log for ${rec.doctorName} on ${rec.date}?`
+    );
+    if (!isConfirmed) return;
+
+    deleteAttendanceEntry(rec.id);
+    loadAttendance();
+    setSuccessMessage(`✓ Attendance log deleted for ${rec.doctorName}`);
     setTimeout(() => setSuccessMessage(''), 4000);
   };
 
@@ -338,7 +406,7 @@ export default function AttendancePortal({ onLogout }) {
 
       </div>
 
-      {/* Attendance History Table */}
+      {/* Attendance History Table with Edit & Delete Actions */}
       <div className="bg-surface-container rounded-2xl border border-outline-variant p-6 shadow-sm space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -374,12 +442,13 @@ export default function AttendancePortal({ onLogout }) {
                 <th className="py-3 px-4">Check-Out</th>
                 <th className="py-3 px-4">Hours</th>
                 <th className="py-3 px-4">Remarks</th>
+                <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/60 bg-surface">
               {filteredRecords.length === 0 ? (
                 <tr>
-                  <td colSpan="8" className="py-8 text-center text-on-surface-variant italic">
+                  <td colSpan="9" className="py-8 text-center text-on-surface-variant italic">
                     No attendance records logged for this period. Use form above to add daily attendance.
                   </td>
                 </tr>
@@ -408,6 +477,26 @@ export default function AttendancePortal({ onLogout }) {
                     <td className="py-3 px-4 font-medium">{rec.checkOutTime}</td>
                     <td className="py-3 px-4 font-semibold">{rec.workingHours}</td>
                     <td className="py-3 px-4 text-on-surface-variant italic">{rec.remarks || '-'}</td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex justify-end gap-1.5">
+                        <button
+                          onClick={() => handleOpenEditModal(rec)}
+                          className="px-2.5 py-1 border border-outline rounded-lg text-xs font-semibold hover:bg-surface-container-high text-on-surface transition-colors flex items-center gap-1"
+                          title="Edit Attendance Log"
+                        >
+                          <span className="material-symbols-outlined text-sm">edit</span>
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteAttendance(rec)}
+                          className="px-2.5 py-1 bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:bg-rose-500/20 font-bold text-xs rounded-lg transition-colors flex items-center gap-1"
+                          title="Delete Attendance Log"
+                        >
+                          <span className="material-symbols-outlined text-sm">delete</span>
+                          <span>Delete</span>
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}
@@ -415,6 +504,137 @@ export default function AttendancePortal({ onLogout }) {
           </table>
         </div>
       </div>
+
+      {/* Edit Attendance Record Modal */}
+      {editingAttendance && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
+          <div className="bg-surface rounded-2xl border border-outline-variant max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <div className="flex justify-between items-center border-b border-outline-variant pb-3">
+              <h3 className="text-lg font-bold font-serif text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary">edit_calendar</span>
+                <span>Edit Attendance Log - {editingAttendance.doctorName}</span>
+              </h3>
+              <button onClick={() => setEditingAttendance(null)} className="text-on-surface-variant hover:text-on-surface font-bold">✕</button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
+              <div>
+                <label className="font-bold text-on-surface-variant uppercase">Doctor Name</label>
+                <select
+                  value={editDoctorId}
+                  onChange={(e) => setEditDoctorId(e.target.value)}
+                  className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs font-semibold outline-none"
+                >
+                  {doctorsList.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name} ({d.specialization})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-on-surface-variant uppercase">Date</label>
+                  <input
+                    type="date"
+                    required
+                    value={editDate}
+                    onChange={(e) => setEditDate(e.target.value)}
+                    className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs font-semibold outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-on-surface-variant uppercase">Shift</label>
+                  <select
+                    value={editShift}
+                    onChange={(e) => setEditShift(e.target.value)}
+                    className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs font-semibold outline-none"
+                  >
+                    <option value="Full Day">Full Day (09:30 AM - 08:00 PM)</option>
+                    <option value="Morning Shift">Morning Shift (09:30 AM - 02:00 PM)</option>
+                    <option value="Evening Shift">Evening Shift (04:00 PM - 08:30 PM)</option>
+                    <option value="Off">Off Day</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-on-surface-variant uppercase">Attendance Status</label>
+                <div className="grid grid-cols-3 gap-2 mt-1">
+                  {['Present', 'Half Day', 'Late', 'On Leave', 'Absent'].map((statusOption) => (
+                    <button
+                      key={statusOption}
+                      type="button"
+                      onClick={() => setEditStatus(statusOption)}
+                      className={`py-2 px-2 rounded-xl text-xs font-bold transition-all border ${
+                        editStatus === statusOption
+                          ? 'bg-primary text-on-primary border-primary shadow-xs'
+                          : 'border-outline text-on-surface-variant hover:text-on-surface bg-surface'
+                      }`}
+                    >
+                      {statusOption}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {editStatus !== 'On Leave' && editStatus !== 'Absent' && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-on-surface-variant uppercase">Check-In Time</label>
+                    <input
+                      type="text"
+                      value={editCheckIn}
+                      onChange={(e) => setEditCheckIn(e.target.value)}
+                      placeholder="09:30 AM"
+                      className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs font-semibold outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-on-surface-variant uppercase">Check-Out Time</label>
+                    <input
+                      type="text"
+                      value={editCheckOut}
+                      onChange={(e) => setEditCheckOut(e.target.value)}
+                      placeholder="08:00 PM"
+                      className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs font-semibold outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="font-bold text-on-surface-variant uppercase">Remarks / Notes</label>
+                <input
+                  type="text"
+                  value={editRemarks}
+                  onChange={(e) => setEditRemarks(e.target.value)}
+                  placeholder="Notes or reasons..."
+                  className="w-full mt-1 p-2.5 rounded-xl border border-outline bg-surface text-xs outline-none"
+                />
+              </div>
+
+              <div className="flex gap-2 justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingAttendance(null)}
+                  className="px-4 py-2 border border-outline rounded-xl font-semibold hover:bg-surface-container"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-primary text-on-primary font-bold rounded-xl hover:bg-primary-hover shadow-sm"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

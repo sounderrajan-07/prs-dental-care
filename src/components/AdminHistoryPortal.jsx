@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {
   getStoredPatientHistory,
   savePatientHistoryRecord,
+  updatePatientHistoryRecord,
+  deletePatientHistoryRecord,
   getPatientHistoryStats
 } from '../utils/patientHistoryStorage';
 import { getStoredDoctors } from '../utils/doctorStorage';
@@ -24,17 +26,31 @@ export default function AdminHistoryPortal({ onLogout }) {
   const [newTreatment, setNewTreatment] = useState('Root Canal Treatment');
   const [newDoctor, setNewDoctor] = useState(() => getStoredDoctors()[0]?.name || 'Dr. Purushotham');
   const [newDate, setNewDate] = useState(new Date().toISOString().split('T')[0]);
-
-  const loadDoctors = () => {
-    setDoctorsList(getStoredDoctors());
-  };
   const [newTimeSlot, setNewTimeSlot] = useState('10:00 AM - 11:00 AM');
   const [newDuration, setNewDuration] = useState('45 mins');
   const [newCost, setNewCost] = useState('₹4,500');
   const [newNotes, setNewNotes] = useState('');
 
+  // Edit Patient Record Form State
+  const [editingRecord, setEditingRecord] = useState(null);
+  const [editPatientName, setEditPatientName] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editTreatment, setEditTreatment] = useState('');
+  const [editDoctor, setEditDoctor] = useState('');
+  const [editDate, setEditDate] = useState('');
+  const [editTimeSlot, setEditTimeSlot] = useState('');
+  const [editDuration, setEditDuration] = useState('45 mins');
+  const [editCost, setEditCost] = useState('');
+  const [editStatus, setEditStatus] = useState('Completed');
+  const [editNotes, setEditNotes] = useState('');
+
   // Rx & Invoice Modal State
   const [activeModalData, setActiveModalData] = useState(null);
+
+  const loadDoctors = () => {
+    setDoctorsList(getStoredDoctors());
+  };
 
   const loadHistory = () => {
     const data = getStoredPatientHistory();
@@ -76,6 +92,56 @@ export default function AdminHistoryPortal({ onLogout }) {
     setNewPatientName('');
     setNewPhone('');
     setNewNotes('');
+  };
+
+  const handleOpenEditModal = (rec) => {
+    setEditingRecord(rec);
+    setEditPatientName(rec.patientName || '');
+    setEditPhone(rec.patientPhone || '');
+    setEditEmail(rec.patientEmail || '');
+    setEditTreatment(rec.treatmentName || '');
+    setEditDoctor(rec.attendingDoctor || doctorsList[0]?.name || '');
+    setEditDate(rec.treatmentDate || new Date().toISOString().split('T')[0]);
+    setEditTimeSlot(rec.timeSlot || '10:00 AM - 11:00 AM');
+    setEditDuration(rec.duration || '45 mins');
+    setEditCost(rec.cost || '₹0');
+    setEditStatus(rec.status || 'Completed');
+    setEditNotes(rec.notes || '');
+  };
+
+  const handleSaveEdit = (e) => {
+    e.preventDefault();
+    if (!editingRecord) return;
+
+    const docObj = doctorsList.find((d) => d.name === editDoctor) || { name: editDoctor, specialization: 'Specialist' };
+
+    updatePatientHistoryRecord(editingRecord.id, {
+      patientName: editPatientName,
+      patientPhone: editPhone,
+      patientEmail: editEmail,
+      treatmentName: editTreatment,
+      attendingDoctor: docObj.name,
+      doctorSpecialization: docObj.specialization,
+      treatmentDate: editDate,
+      timeSlot: editTimeSlot,
+      duration: editDuration,
+      cost: editCost,
+      status: editStatus,
+      notes: editNotes
+    });
+
+    setEditingRecord(null);
+    loadHistory();
+  };
+
+  const handleDeleteRecord = (rec) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete treatment history record for ${rec.patientName}?`
+    );
+    if (!confirmed) return;
+
+    deletePatientHistoryRecord(rec.id);
+    loadHistory();
   };
 
   // Filter patient history records
@@ -295,13 +361,32 @@ export default function AdminHistoryPortal({ onLogout }) {
                     </td>
 
                     <td className="py-3 px-4 text-right">
-                      <button
-                        onClick={() => setActiveModalData(rec)}
-                        className="px-3 py-1.5 bg-primary/10 text-primary hover:bg-primary/20 text-[11px] font-bold rounded-xl transition-colors inline-flex items-center gap-1"
-                      >
-                        <span className="material-symbols-outlined text-sm">receipt_long</span>
-                        <span>Rx / Invoice</span>
-                      </button>
+                      <div className="flex justify-end items-center gap-1.5">
+                        <button
+                          onClick={() => handleOpenEditModal(rec)}
+                          className="px-2.5 py-1 border border-outline rounded-lg text-xs font-semibold hover:bg-surface-container-high text-on-surface transition-colors flex items-center gap-1"
+                          title="Edit Treatment History Record"
+                        >
+                          <span className="material-symbols-outlined text-sm">edit</span>
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteRecord(rec)}
+                          className="px-2.5 py-1 bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:bg-rose-500/20 font-bold text-xs rounded-lg transition-colors flex items-center gap-1"
+                          title="Delete Treatment History Record"
+                        >
+                          <span className="material-symbols-outlined text-sm">delete</span>
+                          <span>Delete</span>
+                        </button>
+                        <button
+                          onClick={() => setActiveModalData(rec)}
+                          className="px-2.5 py-1 bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold rounded-lg transition-colors inline-flex items-center gap-1"
+                          title="Rx / Invoice"
+                        >
+                          <span className="material-symbols-outlined text-sm">receipt_long</span>
+                          <span>Rx / Bill</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -451,6 +536,152 @@ export default function AdminHistoryPortal({ onLogout }) {
                   className="px-5 py-2 bg-primary text-on-primary font-bold rounded-xl hover:bg-primary-hover shadow-sm"
                 >
                   Save Record
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Patient History Modal */}
+      {editingRecord && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
+          <div className="bg-surface rounded-2xl border border-outline-variant max-w-xl w-full p-6 shadow-2xl space-y-4 my-8">
+            <div className="flex justify-between items-center border-b border-outline-variant pb-3">
+              <h3 className="text-lg font-bold font-serif text-on-surface">Edit Patient Treatment Record</h3>
+              <button onClick={() => setEditingRecord(null)} className="text-on-surface-variant hover:text-on-surface font-bold">✕</button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-on-surface-variant uppercase">Patient Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={editPatientName}
+                    onChange={(e) => setEditPatientName(e.target.value)}
+                    className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-on-surface-variant uppercase">Phone Number</label>
+                  <input
+                    type="text"
+                    required
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                    className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-on-surface-variant uppercase">Treatment / Procedure Rendered</label>
+                <input
+                  type="text"
+                  required
+                  value={editTreatment}
+                  onChange={(e) => setEditTreatment(e.target.value)}
+                  className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-on-surface-variant uppercase">Attending Doctor</label>
+                  <select
+                    value={editDoctor}
+                    onChange={(e) => setEditDoctor(e.target.value)}
+                    className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs font-semibold outline-none"
+                  >
+                    {doctorsList.map((d) => (
+                      <option key={d.id} value={d.name}>
+                        {d.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="font-bold text-on-surface-variant uppercase">Treatment Date</label>
+                  <input
+                    type="date"
+                    value={editDate}
+                    onChange={(e) => setEditDate(e.target.value)}
+                    className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="font-bold text-on-surface-variant uppercase">Time Slot</label>
+                  <input
+                    type="text"
+                    value={editTimeSlot}
+                    onChange={(e) => setEditTimeSlot(e.target.value)}
+                    className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-on-surface-variant uppercase">Duration</label>
+                  <select
+                    value={editDuration}
+                    onChange={(e) => setEditDuration(e.target.value)}
+                    className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs font-medium outline-none"
+                  >
+                    <option value="30 mins">30 mins</option>
+                    <option value="45 mins">45 mins</option>
+                    <option value="60 mins">60 mins</option>
+                    <option value="90 mins">90 mins</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="font-bold text-on-surface-variant uppercase">Fee Charged</label>
+                  <input
+                    type="text"
+                    value={editCost}
+                    onChange={(e) => setEditCost(e.target.value)}
+                    className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs font-bold text-emerald-700 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-on-surface-variant uppercase">Treatment Status</label>
+                <select
+                  value={editStatus}
+                  onChange={(e) => setEditStatus(e.target.value)}
+                  className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs font-semibold outline-none"
+                >
+                  <option value="Completed">Completed</option>
+                  <option value="In Progress">In Progress</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-bold text-on-surface-variant uppercase">Clinical Treatment Notes</label>
+                <textarea
+                  rows="3"
+                  value={editNotes}
+                  onChange={(e) => setEditNotes(e.target.value)}
+                  className="w-full mt-1 p-2.5 rounded-xl border border-outline bg-surface text-xs outline-none"
+                ></textarea>
+              </div>
+
+              <div className="flex gap-2 justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingRecord(null)}
+                  className="px-4 py-2 border border-outline rounded-xl font-semibold hover:bg-surface-container"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-primary text-on-primary font-bold rounded-xl hover:bg-primary-hover shadow-sm"
+                >
+                  Save Changes
                 </button>
               </div>
             </form>

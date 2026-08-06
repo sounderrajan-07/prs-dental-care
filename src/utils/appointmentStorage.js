@@ -183,3 +183,15 @@ export const updateAppointmentDetails = (id, updates) => {
     console.error('Error updating appointment details:', err);
   }
 };
+
+export const deleteAppointmentRecord = (id) => {
+  try {
+    const current = getStoredAppointments();
+    const updated = current.filter((apt) => apt.id !== id);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    return updated;
+  } catch (err) {
+    console.error('Error deleting appointment:', err);
+    return null;
+  }
+};

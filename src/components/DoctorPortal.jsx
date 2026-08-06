@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { getStoredAppointments, updateStoredStatus, updateAppointmentDetails } from '../utils/appointmentStorage';
+import { getStoredAppointments, updateStoredStatus, updateAppointmentDetails, deleteAppointmentRecord } from '../utils/appointmentStorage';
 import { getStoredDoctors } from '../utils/doctorStorage';
 import InvoiceRxGeneratorModal from './InvoiceRxGeneratorModal';
 
@@ -87,6 +87,13 @@ export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, 
     const reason = window.prompt(`Please enter rejection reason for ${apt.name}:`, 'Doctor unavailable at requested time slot');
     if (reason === null) return; // User cancelled prompt
     updateStoredStatus(apt.id, 'Rejected', `Rejected: ${reason}`);
+    fetchAppointments();
+  };
+
+  const handleDeleteAppointment = (apt) => {
+    const confirmed = window.confirm(`Are you sure you want to delete appointment for ${apt.name}?`);
+    if (!confirmed) return;
+    deleteAppointmentRecord(apt.id);
     fetchAppointments();
   };
 
@@ -378,6 +385,14 @@ export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, 
                     >
                       <span className="material-symbols-outlined text-base">edit</span>
                       <span>Edit Entry</span>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteAppointment(apt)}
+                      className="px-3 py-1.5 bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:bg-rose-500/20 text-xs font-bold rounded-xl transition-colors flex items-center gap-1"
+                      title="Delete Appointment"
+                    >
+                      <span className="material-symbols-outlined text-base">delete</span>
+                      <span>Delete</span>
                     </button>
                     <button
                       onClick={() => setRxModalData(apt)}

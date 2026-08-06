@@ -135,6 +135,39 @@ export const savePatientHistoryRecord = (recordData) => {
   }
 };
 
+export const updatePatientHistoryRecord = (id, updates) => {
+  try {
+    const current = getStoredPatientHistory();
+    const updated = current.map((rec) => {
+      if (rec.id === id) {
+        return {
+          ...rec,
+          ...updates,
+          cost: updates.cost ? (updates.cost.startsWith('₹') ? updates.cost : `₹${updates.cost}`) : rec.cost
+        };
+      }
+      return rec;
+    });
+    localStorage.setItem(PATIENT_HISTORY_KEY, JSON.stringify(updated));
+    return updated;
+  } catch (err) {
+    console.error('Error updating patient history record:', err);
+    return null;
+  }
+};
+
+export const deletePatientHistoryRecord = (id) => {
+  try {
+    const current = getStoredPatientHistory();
+    const updated = current.filter((rec) => rec.id !== id);
+    localStorage.setItem(PATIENT_HISTORY_KEY, JSON.stringify(updated));
+    return updated;
+  } catch (err) {
+    console.error('Error deleting patient history record:', err);
+    return null;
+  }
+};
+
 export const getPatientHistoryStats = () => {
   const records = getStoredPatientHistory();
   const totalRevenue = records.reduce((sum, r) => {
