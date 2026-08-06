@@ -261,29 +261,6 @@ export default function AdminHistoryPortal({ onLogout }) {
           </button>
 
           <button
-            onClick={handleExportBackup}
-            className="px-3.5 py-2.5 border border-outline bg-surface rounded-xl text-xs font-bold text-on-surface hover:bg-surface-container-high transition-colors flex items-center gap-1.5 shadow-xs"
-            title="Download full clinic database backup JSON file"
-          >
-            <span className="material-symbols-outlined text-base">download_for_offline</span>
-            <span>Export Backup</span>
-          </button>
-
-          <label
-            className="px-3.5 py-2.5 border border-outline bg-surface rounded-xl text-xs font-bold text-on-surface hover:bg-surface-container-high transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
-            title="Restore clinic database from backup JSON file"
-          >
-            <span className="material-symbols-outlined text-base">upload_file</span>
-            <span>Restore Backup</span>
-            <input
-              type="file"
-              accept=".json"
-              onChange={handleImportBackup}
-              className="hidden"
-            />
-          </label>
-
-          <button
             onClick={() => setShowAddModal(true)}
             className="px-4 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary-hover shadow-md transition-colors flex items-center gap-1.5"
           >
