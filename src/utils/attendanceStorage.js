@@ -86,12 +86,50 @@ export const getStoredAttendance = () => {
   }
 };
 
+export const calculateWorkingHours = (checkInTime, checkOutTime, status) => {
+  if (status === 'On Leave' || status === 'Absent') return '0 hrs';
+  if (!checkInTime || !checkOutTime || checkInTime === '-' || checkOutTime === '-') {
+    return status === 'Half Day' ? '4.5 hrs' : '0 hrs';
+  }
+
+  const parseTime = (timeStr) => {
+    if (!timeStr) return null;
+    const clean = timeStr.trim().toUpperCase();
+    const match = clean.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/);
+    if (!match) return null;
+
+    let hours = parseInt(match[1], 10);
+    const minutes = parseInt(match[2], 10);
+    const meridian = match[3];
+
+    if (meridian === 'PM' && hours < 12) hours += 12;
+    if (meridian === 'AM' && hours === 12) hours = 0;
+
+    return hours * 60 + minutes;
+  };
+
+  const startMins = parseTime(checkInTime);
+  const endMins = parseTime(checkOutTime);
+
+  if (startMins === null || endMins === null || endMins <= startMins) {
+    return status === 'Present' ? '10.5 hrs' : status === 'Half Day' ? '4.5 hrs' : status === 'Late' ? '9.0 hrs' : '0 hrs';
+  }
+
+  const diffMins = endMins - startMins;
+  const hours = (diffMins / 60).toFixed(1).replace(/\.0$/, '');
+  return `${hours} hrs`;
+};
+
 export const saveAttendanceEntry = (entryData) => {
   try {
     const current = getStoredAttendance();
     const existingIndex = current.findIndex(
       (item) => item.doctorId === entryData.doctorId && item.date === entryData.date
     );
+
+    const checkInTime = entryData.status === 'On Leave' || entryData.status === 'Absent' ? '-' : (entryData.checkInTime || '09:30 AM');
+    const checkOutTime = entryData.status === 'On Leave' || entryData.status === 'Absent' ? '-' : (entryData.checkOutTime || '08:00 PM');
+    const workingHours = entryData.workingHours || calculateWorkingHours(checkInTime, checkOutTime, entryData.status);
 
     const newRecord = {
       id: entryData.id || `ATT-${entryData.doctorId}-${entryData.date}`,
@@ -101,9 +139,9 @@ export const saveAttendanceEntry = (entryData) => {
       date: entryData.date,
       shift: entryData.shift || 'Full Day',
       status: entryData.status || 'Present',
-      checkInTime: entryData.checkInTime || '09:30 AM',
-      checkOutTime: entryData.checkOutTime || '08:00 PM',
-      workingHours: entryData.workingHours || (entryData.status === 'Present' ? '10.5 hrs' : '4.5 hrs'),
+      checkInTime,
+      checkOutTime,
+      workingHours,
       remarks: entryData.remarks || '',
       markedAt: new Date().toISOString()
     };
@@ -127,7 +165,23 @@ export const saveAttendanceEntry = (entryData) => {
 export const updateAttendanceEntry = (id, updates) => {
   try {
     const current = getStoredAttendance();
-    const updated = current.map((rec) => (rec.id === id ? { ...rec, ...updates } : rec));
+    const updated = current.map((rec) => {
+      if (rec.id === id) {
+        const checkInTime = updates.checkInTime !== undefined ? updates.checkInTime : rec.checkInTime;
+        const checkOutTime = updates.checkOutTime !== undefined ? updates.checkOutTime : rec.checkOutTime;
+        const status = updates.status !== undefined ? updates.status : rec.status;
+        const workingHours = calculateWorkingHours(checkInTime, checkOutTime, status);
+
+        return {
+          ...rec,
+          ...updates,
+          checkInTime,
+          checkOutTime,
+          workingHours
+        };
+      }
+      return rec;
+    });
     localStorage.setItem(ATTENDANCE_STORAGE_KEY, JSON.stringify(updated));
     return updated;
   } catch (err) {

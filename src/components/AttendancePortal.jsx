@@ -4,6 +4,7 @@ import {
   saveAttendanceEntry,
   updateAttendanceEntry,
   deleteAttendanceEntry,
+  calculateWorkingHours,
   getAttendanceSummaryByDoctor,
   downloadMonthlyAttendanceExcel
 } from '../utils/attendanceStorage';
@@ -53,14 +54,9 @@ export default function AttendancePortal({ onLogout }) {
     e.preventDefault();
     const docObj = doctorsList.find((d) => d.id === formDoctorId) || doctorsList[0];
 
-    const workingHours =
-      formStatus === 'Present'
-        ? '10.5 hrs'
-        : formStatus === 'Half Day'
-        ? '4.5 hrs'
-        : formStatus === 'Late'
-        ? '9.0 hrs'
-        : '0 hrs';
+    const checkInTime = formStatus === 'On Leave' || formStatus === 'Absent' ? '-' : formCheckIn;
+    const checkOutTime = formStatus === 'On Leave' || formStatus === 'Absent' ? '-' : formCheckOut;
+    const workingHours = calculateWorkingHours(checkInTime, checkOutTime, formStatus);
 
     saveAttendanceEntry({
       doctorId: docObj.id,
@@ -69,8 +65,8 @@ export default function AttendancePortal({ onLogout }) {
       date: formDate,
       shift: formShift,
       status: formStatus,
-      checkInTime: formStatus === 'On Leave' || formStatus === 'Absent' ? '-' : formCheckIn,
-      checkOutTime: formStatus === 'On Leave' || formStatus === 'Absent' ? '-' : formCheckOut,
+      checkInTime,
+      checkOutTime,
       workingHours,
       remarks: formRemarks
     });
@@ -96,14 +92,9 @@ export default function AttendancePortal({ onLogout }) {
     if (!editingAttendance) return;
 
     const docObj = doctorsList.find((d) => d.id === editDoctorId) || doctorsList[0];
-    const workingHours =
-      editStatus === 'Present'
-        ? '10.5 hrs'
-        : editStatus === 'Half Day'
-        ? '4.5 hrs'
-        : editStatus === 'Late'
-        ? '9.0 hrs'
-        : '0 hrs';
+    const checkInTime = editStatus === 'On Leave' || editStatus === 'Absent' ? '-' : editCheckIn;
+    const checkOutTime = editStatus === 'On Leave' || editStatus === 'Absent' ? '-' : editCheckOut;
+    const workingHours = calculateWorkingHours(checkInTime, checkOutTime, editStatus);
 
     updateAttendanceEntry(editingAttendance.id, {
       doctorId: docObj.id,
@@ -112,8 +103,8 @@ export default function AttendancePortal({ onLogout }) {
       date: editDate,
       shift: editShift,
       status: editStatus,
-      checkInTime: editStatus === 'On Leave' || editStatus === 'Absent' ? '-' : editCheckIn,
-      checkOutTime: editStatus === 'On Leave' || editStatus === 'Absent' ? '-' : editCheckOut,
+      checkInTime,
+      checkOutTime,
       workingHours,
       remarks: editRemarks
     });
