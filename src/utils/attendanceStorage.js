@@ -71,14 +71,74 @@ const generateSeedAttendance = () => {
   return records;
 };
 
+export const isValidTimeFormat = (timeStr) => {
+  if (!timeStr || timeStr === '-') return true;
+  const clean = timeStr.trim().toUpperCase();
+  const match = clean.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/);
+  if (!match) return false;
+
+  let hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
+  const meridian = match[3];
+
+  if (minutes < 0 || minutes > 59) return false;
+
+  if (meridian) {
+    if (hours < 1 || hours > 12) return false;
+  } else {
+    if (hours < 0 || hours > 23) return false;
+  }
+
+  return true;
+};
+
+export const formatAndNormalizeTime = (timeStr) => {
+  if (!timeStr || timeStr === '-') return '-';
+  const clean = timeStr.trim().toUpperCase();
+  const match = clean.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/);
+  if (!match) return timeStr;
+
+  let hours = parseInt(match[1], 10);
+  let minutes = parseInt(match[2], 10);
+  let meridian = match[3] || 'AM';
+
+  if (minutes >= 60) {
+    const extraHours = Math.floor(minutes / 60);
+    minutes = minutes % 60;
+    hours += extraHours;
+  }
+
+  if (meridian === 'PM' || meridian === 'AM') {
+    if (hours > 12) {
+      hours = ((hours - 1) % 12) + 1;
+    }
+    if (hours === 0) hours = 12;
+  } else {
+    if (hours >= 12) {
+      meridian = 'PM';
+      if (hours > 12) hours -= 12;
+    } else {
+      meridian = 'AM';
+      if (hours === 0) hours = 12;
+    }
+  }
+
+  const hStr = String(hours).padStart(2, '0');
+  const mStr = String(minutes).padStart(2, '0');
+  return `${hStr}:${mStr} ${meridian}`;
+};
+
 export const calculateWorkingHours = (checkInTime, checkOutTime, status) => {
   if (status === 'On Leave' || status === 'Absent') return '0 hrs';
   if (!checkInTime || !checkOutTime || checkInTime === '-' || checkOutTime === '-') {
     return '0 hrs';
   }
 
+  const normIn = formatAndNormalizeTime(checkInTime);
+  const normOut = formatAndNormalizeTime(checkOutTime);
+
   const parseTime = (timeStr) => {
-    if (!timeStr) return null;
+    if (!timeStr || timeStr === '-') return null;
     const clean = timeStr.trim().toUpperCase();
     const match = clean.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/);
     if (!match) return null;
@@ -87,14 +147,16 @@ export const calculateWorkingHours = (checkInTime, checkOutTime, status) => {
     const minutes = parseInt(match[2], 10);
     const meridian = match[3];
 
+    if (minutes > 59) return null;
+
     if (meridian === 'PM' && hours < 12) hours += 12;
     if (meridian === 'AM' && hours === 12) hours = 0;
 
     return hours * 60 + minutes;
   };
 
-  const startMins = parseTime(checkInTime);
-  const endMins = parseTime(checkOutTime);
+  const startMins = parseTime(normIn);
+  const endMins = parseTime(normOut);
 
   if (startMins === null || endMins === null || endMins <= startMins) {
     return '0 hrs';
@@ -117,10 +179,16 @@ export const getStoredAttendance = () => {
       records = Array.isArray(parsed) && parsed.length > 0 ? parsed : generateSeedAttendance();
     }
 
-    return records.map((rec) => ({
-      ...rec,
-      workingHours: calculateWorkingHours(rec.checkInTime, rec.checkOutTime, rec.status)
-    }));
+    return records.map((rec) => {
+      const sanitizedCheckIn = formatAndNormalizeTime(rec.checkInTime);
+      const sanitizedCheckOut = formatAndNormalizeTime(rec.checkOutTime);
+      return {
+        ...rec,
+        checkInTime: sanitizedCheckIn,
+        checkOutTime: sanitizedCheckOut,
+        workingHours: calculateWorkingHours(sanitizedCheckIn, sanitizedCheckOut, rec.status)
+      };
+    });
   } catch (err) {
     return generateSeedAttendance().map((rec) => ({
       ...rec,

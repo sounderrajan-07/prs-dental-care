@@ -6,7 +6,9 @@ import {
   deleteAttendanceEntry,
   calculateWorkingHours,
   getAttendanceSummaryByDoctor,
-  downloadMonthlyAttendanceExcel
+  downloadMonthlyAttendanceExcel,
+  isValidTimeFormat,
+  formatAndNormalizeTime
 } from '../utils/attendanceStorage';
 import { getStoredDoctors } from '../utils/doctorStorage';
 
@@ -54,8 +56,19 @@ export default function AttendancePortal({ onLogout }) {
     e.preventDefault();
     const docObj = doctorsList.find((d) => d.id === formDoctorId) || doctorsList[0];
 
-    const checkInTime = formStatus === 'On Leave' || formStatus === 'Absent' ? '-' : formCheckIn;
-    const checkOutTime = formStatus === 'On Leave' || formStatus === 'Absent' ? '-' : formCheckOut;
+    if (formStatus !== 'On Leave' && formStatus !== 'Absent') {
+      if (!isValidTimeFormat(formCheckIn)) {
+        alert("Invalid Check-In Time format! Minutes must be between 00 and 59 (e.g. 09:30 AM or 04:15 PM).");
+        return;
+      }
+      if (!isValidTimeFormat(formCheckOut)) {
+        alert("Invalid Check-Out Time format! Minutes must be between 00 and 59 (e.g. 06:00 PM or 08:30 PM).");
+        return;
+      }
+    }
+
+    const checkInTime = formStatus === 'On Leave' || formStatus === 'Absent' ? '-' : formatAndNormalizeTime(formCheckIn);
+    const checkOutTime = formStatus === 'On Leave' || formStatus === 'Absent' ? '-' : formatAndNormalizeTime(formCheckOut);
     const workingHours = calculateWorkingHours(checkInTime, checkOutTime, formStatus);
 
     saveAttendanceEntry({
@@ -92,8 +105,20 @@ export default function AttendancePortal({ onLogout }) {
     if (!editingAttendance) return;
 
     const docObj = doctorsList.find((d) => d.id === editDoctorId) || doctorsList[0];
-    const checkInTime = editStatus === 'On Leave' || editStatus === 'Absent' ? '-' : editCheckIn;
-    const checkOutTime = editStatus === 'On Leave' || editStatus === 'Absent' ? '-' : editCheckOut;
+
+    if (editStatus !== 'On Leave' && editStatus !== 'Absent') {
+      if (!isValidTimeFormat(editCheckIn)) {
+        alert("Invalid Check-In Time format! Minutes must be between 00 and 59 (e.g. 09:30 AM or 04:15 PM).");
+        return;
+      }
+      if (!isValidTimeFormat(editCheckOut)) {
+        alert("Invalid Check-Out Time format! Minutes must be between 00 and 59 (e.g. 06:00 PM or 08:30 PM).");
+        return;
+      }
+    }
+
+    const checkInTime = editStatus === 'On Leave' || editStatus === 'Absent' ? '-' : formatAndNormalizeTime(editCheckIn);
+    const checkOutTime = editStatus === 'On Leave' || editStatus === 'Absent' ? '-' : formatAndNormalizeTime(editCheckOut);
     const workingHours = calculateWorkingHours(checkInTime, checkOutTime, editStatus);
 
     updateAttendanceEntry(editingAttendance.id, {
