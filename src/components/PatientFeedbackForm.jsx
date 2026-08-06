@@ -102,25 +102,31 @@ export default function PatientFeedbackForm() {
             {/* Inputs Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="font-bold text-on-surface-variant uppercase block mb-1">Your Full Name *</label>
+                <label htmlFor="feedback-name" className="font-bold text-on-surface-variant uppercase block mb-1">Your Full Name *</label>
                 <input
+                  id="feedback-name"
+                  name="name"
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Anand Saravanan"
+                  autoComplete="name"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-outline bg-surface text-xs font-medium outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
 
               <div>
-                <label className="font-bold text-on-surface-variant uppercase block mb-1">Contact Number (Phone) *</label>
+                <label htmlFor="feedback-phone" className="font-bold text-on-surface-variant uppercase block mb-1">Contact Number (Phone) *</label>
                 <input
-                  type="text"
+                  id="feedback-phone"
+                  name="phone"
+                  type="tel"
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+91 98765 43210"
+                  autoComplete="tel"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-outline bg-surface text-xs font-medium outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
@@ -128,8 +134,10 @@ export default function PatientFeedbackForm() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="font-bold text-on-surface-variant uppercase block mb-1">Treatment Received *</label>
+                <label htmlFor="feedback-treatment" className="font-bold text-on-surface-variant uppercase block mb-1">Treatment Received *</label>
                 <select
+                  id="feedback-treatment"
+                  name="treatment"
                   value={treatment}
                   onChange={(e) => setTreatment(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-outline bg-surface text-xs font-semibold outline-none focus:ring-2 focus:ring-primary"
@@ -146,6 +154,8 @@ export default function PatientFeedbackForm() {
                 </select>
                 {treatment === 'Other' && (
                   <input
+                    id="feedback-custom-treatment"
+                    name="customTreatment"
                     type="text"
                     required
                     value={customTreatment}
@@ -157,8 +167,10 @@ export default function PatientFeedbackForm() {
               </div>
 
               <div>
-                <label className="font-bold text-on-surface-variant uppercase block mb-1">Treatment / Visit Date</label>
+                <label htmlFor="feedback-date" className="font-bold text-on-surface-variant uppercase block mb-1">Treatment / Visit Date</label>
                 <input
+                  id="feedback-date"
+                  name="date"
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
@@ -168,8 +180,10 @@ export default function PatientFeedbackForm() {
             </div>
 
             <div>
-              <label className="font-bold text-on-surface-variant uppercase block mb-1">Your Detailed Feedback & Review *</label>
+              <label htmlFor="feedback-comment" className="font-bold text-on-surface-variant uppercase block mb-1">Your Detailed Feedback & Review *</label>
               <textarea
+                id="feedback-comment"
+                name="comment"
                 rows="4"
                 required
                 value={comment}

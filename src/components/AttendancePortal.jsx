@@ -211,8 +211,10 @@ export default function AttendancePortal({ onLogout }) {
 
           <form onSubmit={handleMarkAttendance} className="space-y-4 text-xs">
             <div>
-              <label className="font-bold text-on-surface-variant uppercase">Select Doctor</label>
+              <label htmlFor="attend-doc-select" className="font-bold text-on-surface-variant uppercase">Select Doctor</label>
               <select
+                id="attend-doc-select"
+                name="formDoctorId"
                 value={formDoctorId}
                 onChange={(e) => setFormDoctorId(e.target.value)}
                 className="w-full mt-1 p-2.5 rounded-xl border border-outline bg-surface text-sm font-semibold text-on-surface outline-none focus:ring-2 focus:ring-primary"
@@ -227,8 +229,10 @@ export default function AttendancePortal({ onLogout }) {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="font-bold text-on-surface-variant uppercase">Date</label>
+                <label htmlFor="attend-date-input" className="font-bold text-on-surface-variant uppercase">Date</label>
                 <input
+                  id="attend-date-input"
+                  name="formDate"
                   type="date"
                   value={formDate}
                   onChange={(e) => setFormDate(e.target.value)}
@@ -236,8 +240,10 @@ export default function AttendancePortal({ onLogout }) {
                 />
               </div>
               <div>
-                <label className="font-bold text-on-surface-variant uppercase">Shift</label>
+                <label htmlFor="attend-shift-select" className="font-bold text-on-surface-variant uppercase">Shift</label>
                 <select
+                  id="attend-shift-select"
+                  name="formShift"
                   value={formShift}
                   onChange={(e) => setFormShift(e.target.value)}
                   className="w-full mt-1 p-2 rounded-xl border border-outline bg-surface text-xs font-semibold outline-none"
@@ -251,7 +257,7 @@ export default function AttendancePortal({ onLogout }) {
             </div>
 
             <div>
-              <label className="font-bold text-on-surface-variant uppercase">Attendance Status</label>
+              <span className="font-bold text-on-surface-variant uppercase block">Attendance Status</span>
               <div className="grid grid-cols-3 gap-2 mt-1">
                 {['Present', 'Half Day', 'Late', 'On Leave', 'Absent'].map((statusOption) => (
                   <button
@@ -273,8 +279,10 @@ export default function AttendancePortal({ onLogout }) {
             {formStatus !== 'On Leave' && formStatus !== 'Absent' && (
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-on-surface-variant uppercase">Check-In Time</label>
+                  <label htmlFor="attend-checkin-input" className="font-bold text-on-surface-variant uppercase">Check-In Time</label>
                   <input
+                    id="attend-checkin-input"
+                    name="formCheckIn"
                     type="text"
                     value={formCheckIn}
                     onChange={(e) => setFormCheckIn(e.target.value)}
@@ -283,8 +291,10 @@ export default function AttendancePortal({ onLogout }) {
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-on-surface-variant uppercase">Check-Out Time</label>
+                  <label htmlFor="attend-checkout-input" className="font-bold text-on-surface-variant uppercase">Check-Out Time</label>
                   <input
+                    id="attend-checkout-input"
+                    name="formCheckOut"
                     type="text"
                     value={formCheckOut}
                     onChange={(e) => setFormCheckOut(e.target.value)}
@@ -296,8 +306,10 @@ export default function AttendancePortal({ onLogout }) {
             )}
 
             <div>
-              <label className="font-bold text-on-surface-variant uppercase">Remarks / Notes</label>
+              <label htmlFor="attend-remarks-input" className="font-bold text-on-surface-variant uppercase">Remarks / Notes</label>
               <input
+                id="attend-remarks-input"
+                name="formRemarks"
                 type="text"
                 value={formRemarks}
                 onChange={(e) => setFormRemarks(e.target.value)}
