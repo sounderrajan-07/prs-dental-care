@@ -149,7 +149,7 @@ export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, 
                 </span>
               ) : (
                 <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 flex items-center gap-1">
-                  <span className="material-symbols-outlined text-xs">lock</span> Isolated Doctor Portal
+                  <span className="material-symbols-outlined text-xs">medical_services</span> Doctor Portal Active
                 </span>
               )}
               <span className="text-xs text-on-surface-variant">• PRS Dental Care</span>

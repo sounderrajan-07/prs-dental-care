@@ -182,8 +182,8 @@ export default function AttendancePortal({ onLogout }) {
               onClick={onLogout}
               className="px-3.5 py-2.5 border border-outline rounded-xl text-xs font-semibold hover:bg-surface-container-high transition-colors flex items-center gap-1"
             >
-              <span className="material-symbols-outlined text-base">lock</span>
-              <span>Lock Portal</span>
+              <span className="material-symbols-outlined text-base">logout</span>
+              <span>Sign Out</span>
             </button>
           )}
         </div>
