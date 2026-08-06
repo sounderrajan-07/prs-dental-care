@@ -213,14 +213,6 @@ export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, 
             <span className="material-symbols-outlined text-base">description</span>
             <span>Write Rx / Invoice</span>
           </button>
-
-          <button
-            onClick={onLogout}
-            className="px-3.5 py-2 border border-outline rounded-xl text-xs font-semibold hover:bg-surface-container-high text-on-surface transition-colors flex items-center gap-1"
-          >
-            <span className="material-symbols-outlined text-base">lock</span>
-            <span>Lock Session</span>
-          </button>
         </div>
       </div>
 
