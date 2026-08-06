@@ -290,9 +290,19 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
                   </div>
 
                   <div className="space-y-3">
+                    {/* Rx Column Subheadings Header */}
+                    <div className="hidden md:grid grid-cols-12 gap-2 px-3 py-1.5 bg-surface-container-high rounded-xl text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">
+                      <div className="col-span-4">Medicine / Drug Name</div>
+                      <div className="col-span-3">Dosage (M-A-N)</div>
+                      <div className="col-span-2">Duration</div>
+                      <div className="col-span-2">Remarks</div>
+                      <div className="col-span-1 text-center">Remove</div>
+                    </div>
+
                     {medications.map((med, idx) => (
                       <div key={idx} className="p-3 bg-surface-container-low border border-outline-variant/60 rounded-xl grid grid-cols-1 md:grid-cols-12 gap-2 items-center">
                         <div className="md:col-span-4">
+                          <label className="block md:hidden text-[10px] font-bold text-on-surface-variant uppercase mb-0.5">Medicine / Drug Name</label>
                           <input
                             type="text"
                             value={med.drug}
@@ -302,6 +312,7 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
                           />
                         </div>
                         <div className="md:col-span-3">
+                          <label className="block md:hidden text-[10px] font-bold text-on-surface-variant uppercase mb-0.5">Dosage</label>
                           <input
                             type="text"
                             value={med.dosage}
@@ -311,6 +322,7 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
                           />
                         </div>
                         <div className="md:col-span-2">
+                          <label className="block md:hidden text-[10px] font-bold text-on-surface-variant uppercase mb-0.5">Duration</label>
                           <input
                             type="text"
                             value={med.duration}
@@ -320,6 +332,7 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
                           />
                         </div>
                         <div className="md:col-span-2">
+                          <label className="block md:hidden text-[10px] font-bold text-on-surface-variant uppercase mb-0.5">Remarks</label>
                           <input
                             type="text"
                             value={med.notes}
@@ -382,9 +395,18 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
                 </div>
 
                 <div className="space-y-3">
+                  {/* Column Subheadings Header */}
+                  <div className="hidden md:grid grid-cols-12 gap-2 px-3 py-1.5 bg-surface-container-high rounded-xl text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">
+                    <div className="col-span-6">Treatment Description</div>
+                    <div className="col-span-2 text-center">Quantity (Qty)</div>
+                    <div className="col-span-3 text-right">Fee / Rate (₹)</div>
+                    <div className="col-span-1 text-center">Remove</div>
+                  </div>
+
                   {invoiceItems.map((item, idx) => (
                     <div key={idx} className="p-3 bg-surface-container-low border border-outline-variant/60 rounded-xl grid grid-cols-1 md:grid-cols-12 gap-2 items-center">
                       <div className="md:col-span-6">
+                        <label className="block md:hidden text-[10px] font-bold text-on-surface-variant uppercase mb-0.5">Treatment Description</label>
                         <input
                           type="text"
                           value={item.description}
@@ -394,23 +416,28 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
                         />
                       </div>
                       <div className="md:col-span-2">
+                        <label className="block md:hidden text-[10px] font-bold text-on-surface-variant uppercase mb-0.5">Quantity (Qty)</label>
                         <input
                           type="number"
                           min="1"
                           value={item.qty}
                           onChange={(e) => handleItemChange(idx, 'qty', e.target.value)}
                           placeholder="Qty"
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-outline bg-surface text-xs"
+                          className="w-full px-2.5 py-1.5 rounded-lg border border-outline bg-surface text-xs text-center font-bold"
                         />
                       </div>
                       <div className="md:col-span-3">
-                        <input
-                          type="number"
-                          value={item.rate}
-                          onChange={(e) => handleItemChange(idx, 'rate', e.target.value)}
-                          placeholder="Rate (₹)"
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-outline bg-surface text-xs"
-                        />
+                        <label className="block md:hidden text-[10px] font-bold text-on-surface-variant uppercase mb-0.5">Fee / Rate (₹)</label>
+                        <div className="relative">
+                          <span className="absolute left-2.5 top-1.5 text-xs text-on-surface-variant font-bold">₹</span>
+                          <input
+                            type="number"
+                            value={item.rate}
+                            onChange={(e) => handleItemChange(idx, 'rate', e.target.value)}
+                            placeholder="Rate (₹)"
+                            className="w-full pl-6 pr-2.5 py-1.5 rounded-lg border border-outline bg-surface text-xs text-right font-bold text-emerald-700"
+                          />
+                        </div>
                       </div>
                       <div className="md:col-span-1 text-right">
                         <button
