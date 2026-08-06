@@ -361,7 +361,14 @@ export default function Admin() {
 
         {/* Dynamic Portal View Rendering based on active role */}
         {authRole === 'admin' && <AdminHistoryPortal onLogout={handleLogout} />}
-        {authRole === 'doctor' && <DoctorPortal loggedDoctor={activeDoctor} onLogout={handleLogout} />}
+        {authRole === 'doctor' && (
+          <DoctorPortal
+            loggedDoctor={activeDoctor}
+            onLogout={handleLogout}
+            isAdmin={authorizedRoles.includes('admin')}
+            doctorList={doctorList}
+          />
+        )}
         {authRole === 'attendance' && <AttendancePortal onLogout={handleLogout} />}
 
       </div>
