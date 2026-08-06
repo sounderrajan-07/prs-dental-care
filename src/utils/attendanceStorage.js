@@ -61,7 +61,7 @@ const generateSeedAttendance = () => {
         status,
         checkInTime: checkIn,
         checkOutTime: checkOut,
-        workingHours: status === 'Present' ? '10.5 hrs' : status === 'Half Day' ? '4.5 hrs' : '0 hrs',
+        workingHours: calculateWorkingHours(checkIn, checkOut, status),
         remarks,
         markedAt: new Date(year, month, day, 9, 30).toISOString()
       });
@@ -71,25 +71,10 @@ const generateSeedAttendance = () => {
   return records;
 };
 
-export const getStoredAttendance = () => {
-  try {
-    const raw = localStorage.getItem(ATTENDANCE_STORAGE_KEY);
-    if (!raw) {
-      const initial = generateSeedAttendance();
-      localStorage.setItem(ATTENDANCE_STORAGE_KEY, JSON.stringify(initial));
-      return initial;
-    }
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : generateSeedAttendance();
-  } catch (err) {
-    return generateSeedAttendance();
-  }
-};
-
 export const calculateWorkingHours = (checkInTime, checkOutTime, status) => {
   if (status === 'On Leave' || status === 'Absent') return '0 hrs';
   if (!checkInTime || !checkOutTime || checkInTime === '-' || checkOutTime === '-') {
-    return status === 'Half Day' ? '4.5 hrs' : '0 hrs';
+    return '0 hrs';
   }
 
   const parseTime = (timeStr) => {
@@ -112,12 +97,36 @@ export const calculateWorkingHours = (checkInTime, checkOutTime, status) => {
   const endMins = parseTime(checkOutTime);
 
   if (startMins === null || endMins === null || endMins <= startMins) {
-    return status === 'Present' ? '10.5 hrs' : status === 'Half Day' ? '4.5 hrs' : status === 'Late' ? '9.0 hrs' : '0 hrs';
+    return '0 hrs';
   }
 
   const diffMins = endMins - startMins;
   const hours = (diffMins / 60).toFixed(1).replace(/\.0$/, '');
   return `${hours} hrs`;
+};
+
+export const getStoredAttendance = () => {
+  try {
+    const raw = localStorage.getItem(ATTENDANCE_STORAGE_KEY);
+    let records;
+    if (!raw) {
+      records = generateSeedAttendance();
+      localStorage.setItem(ATTENDANCE_STORAGE_KEY, JSON.stringify(records));
+    } else {
+      const parsed = JSON.parse(raw);
+      records = Array.isArray(parsed) && parsed.length > 0 ? parsed : generateSeedAttendance();
+    }
+
+    return records.map((rec) => ({
+      ...rec,
+      workingHours: calculateWorkingHours(rec.checkInTime, rec.checkOutTime, rec.status)
+    }));
+  } catch (err) {
+    return generateSeedAttendance().map((rec) => ({
+      ...rec,
+      workingHours: calculateWorkingHours(rec.checkInTime, rec.checkOutTime, rec.status)
+    }));
+  }
 };
 
 export const saveAttendanceEntry = (entryData) => {

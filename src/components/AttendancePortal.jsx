@@ -466,7 +466,7 @@ export default function AttendancePortal({ onLogout }) {
                     </td>
                     <td className="py-3 px-4 font-medium">{rec.checkInTime}</td>
                     <td className="py-3 px-4 font-medium">{rec.checkOutTime}</td>
-                    <td className="py-3 px-4 font-semibold">{rec.workingHours}</td>
+                    <td className="py-3 px-4 font-semibold">{calculateWorkingHours(rec.checkInTime, rec.checkOutTime, rec.status)}</td>
                     <td className="py-3 px-4 text-on-surface-variant italic">{rec.remarks || '-'}</td>
                     <td className="py-3 px-4 text-right">
                       <div className="flex justify-end gap-1.5">
