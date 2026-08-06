@@ -70,14 +70,14 @@ export default function Admin() {
     } else if (selectedRoleTarget === 'doctor') {
       const result = verifyDoctorLogin(activeDoctor.id, passcode);
       if (result.success && result.doctor) {
-        saveAuthSession('doctor', ['admin', 'doctor', 'attendance'], result.doctor);
+        saveAuthSession('doctor', ['doctor', 'attendance'], result.doctor);
         setPasscode('');
       } else {
         setPasscodeError(true);
       }
     } else if (selectedRoleTarget === 'attendance') {
       if (passcode === 'attend123' || passcode === 'attendance' || passcode === '1234' || passcode === 'admin123') {
-        saveAuthSession('attendance', ['admin', 'doctor', 'attendance']);
+        saveAuthSession('attendance', ['attendance']);
         setPasscode('');
       } else {
         setPasscodeError(true);
@@ -93,12 +93,14 @@ export default function Admin() {
   };
 
   const handleNavClick = (targetRole) => {
-    setAuthRole(targetRole);
-    sessionStorage.setItem('prs_clinic_role', targetRole);
-    if (!authorizedRoles.includes(targetRole)) {
-      const newRoles = [...authorizedRoles, targetRole];
-      setAuthorizedRoles(newRoles);
-      sessionStorage.setItem('prs_clinic_authorized_roles', JSON.stringify(newRoles));
+    if (authorizedRoles.includes(targetRole)) {
+      setAuthRole(targetRole);
+      sessionStorage.setItem('prs_clinic_role', targetRole);
+    } else {
+      // Role is not authorized in current session -> Prompt for unlocking passcode
+      setUnlockRoleTarget(targetRole);
+      setUnlockPasscode('');
+      setUnlockError(false);
     }
   };
 
@@ -107,11 +109,12 @@ export default function Admin() {
     setUnlockError(false);
 
     let isValid = false;
-    let newAllowed = ['admin', 'doctor', 'attendance'];
+    let newAllowed = [...authorizedRoles, unlockRoleTarget];
 
     if (unlockRoleTarget === 'admin') {
       if (unlockPasscode === 'admin123' || unlockPasscode === 'admin' || unlockPasscode === '1234') {
         isValid = true;
+        newAllowed = ['admin', 'doctor', 'attendance'];
       }
     } else if (unlockRoleTarget === 'doctor') {
       if (unlockPasscode === 'doctor123' || unlockPasscode === 'doc123' || unlockPasscode === '1234') {
@@ -312,7 +315,9 @@ export default function Admin() {
                   : 'border border-outline text-on-surface-variant hover:text-on-surface bg-surface'
               }`}
             >
-              <span className="material-symbols-outlined text-base">admin_panel_settings</span>
+              <span className="material-symbols-outlined text-base">
+                {authorizedRoles.includes('admin') ? 'admin_panel_settings' : 'lock'}
+              </span>
               <span>Admin & Patient History</span>
             </button>
 
