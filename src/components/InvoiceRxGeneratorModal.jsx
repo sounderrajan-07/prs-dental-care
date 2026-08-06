@@ -244,11 +244,11 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
 
       // Build custom formatted message for WhatsApp without document image instruction line
       let text = `*PRS DENTAL CARE - ${docTypeLabel.toUpperCase()}*\n\n`;
-      text += `👤 *Patient:* ${patientName}\n`;
-      text += `👨‍⚕️ *Doctor:* ${doctorName}\n`;
-      text += `📅 *Date:* ${invoiceDate}\n`;
+      text += `*Patient:* ${patientName}\n`;
+      text += `*Doctor:* ${doctorName}\n`;
+      text += `*Date:* ${invoiceDate}\n`;
       if (activeTab === 'rx') {
-        text += `🩺 *Diagnosis:* ${diagnosis}\n`;
+        text += `*Diagnosis:* ${diagnosis}\n`;
         text += `\n*Prescribed Medications Summary:*\n`;
         medications.forEach((m, idx) => {
           if (m.drug) text += `${idx + 1}. ${m.drug} - ${m.dosage} (${m.duration})\n`;
@@ -256,9 +256,9 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
         if (clinicalAdvice) text += `\n*Advice:* ${clinicalAdvice}\n`;
         if (nextVisitDate) text += `*Next Visit:* ${nextVisitDate}\n`;
       } else {
-        text += `🧾 *Invoice Serial:* ${invoiceNo}\n`;
-        text += `💰 *Grand Total Payable:* ₹${grandTotal.toLocaleString('en-IN')}\n`;
-        text += `💳 *Payment Status:* ${paymentStatus} (${paymentMode})\n`;
+        text += `*Invoice Serial:* ${invoiceNo}\n`;
+        text += `*Grand Total Payable:* ₹${grandTotal.toLocaleString('en-IN')}\n`;
+        text += `*Payment Status:* ${paymentStatus} (${paymentMode})\n`;
       }
       text += `\n*PRS Dental Care, Kolathur, Chennai* | Contact: +91 72007 18607`;
 
@@ -682,9 +682,18 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
                 </div>
               </div>
               <div className="text-left sm:text-right text-xs text-slate-700 leading-relaxed border-t sm:border-t-0 pt-2 sm:pt-0 w-full sm:w-auto">
-                <p className="font-bold text-slate-900">📞 +91 72007 18607 / +91 94443 65637</p>
-                <p>✉️ prsdentalcare@gmail.com</p>
-                <p>🌐 www.prsdentalcare.com</p>
+                <p className="font-bold text-slate-900 flex items-center justify-start sm:justify-end gap-1">
+                  <span className="material-symbols-outlined text-xs text-teal-700">call</span>
+                  <span>+91 72007 18607 / +91 94443 65637</span>
+                </p>
+                <p className="flex items-center justify-start sm:justify-end gap-1">
+                  <span className="material-symbols-outlined text-xs text-teal-700">mail</span>
+                  <span>prsdentalcare@gmail.com</span>
+                </p>
+                <p className="flex items-center justify-start sm:justify-end gap-1">
+                  <span className="material-symbols-outlined text-xs text-teal-700">language</span>
+                  <span>www.prsdentalcare.com</span>
+                </p>
                 <div className="mt-2 inline-block px-2.5 py-0.5 bg-teal-100 text-teal-900 font-bold rounded border border-teal-300 uppercase text-[10px]">
                   {activeTab === 'rx' ? 'Digital Prescription' : 'Patient Billing Invoice'}
                 </div>

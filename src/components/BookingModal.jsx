@@ -293,7 +293,10 @@ export default function BookingModal({ isOpen, onClose, initialService = '' }) {
             <div className="bg-surface-container p-4 rounded-2xl text-left text-xs space-y-2 text-on-surface max-w-sm mx-auto border border-outline-variant/20">
               <div className="flex justify-between">
                 <span className="text-on-surface-variant">Status:</span>
-                <span className="text-amber-800 font-extrabold bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full text-[11px]">⏳ Pending Admin Approval</span>
+                <span className="text-amber-800 font-extrabold bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-full text-[11px] flex items-center gap-1">
+                  <span className="material-symbols-outlined text-xs">hourglass_top</span>
+                  <span>Pending Admin Approval</span>
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-on-surface-variant">Clinic:</span>

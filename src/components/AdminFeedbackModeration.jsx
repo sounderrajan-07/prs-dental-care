@@ -116,7 +116,10 @@ export default function AdminFeedbackModeration() {
                   <div>
                     <span className="text-[11px] font-extrabold text-primary tracking-wider uppercase">{fb.id}</span>
                     <h4 className="text-base font-bold text-on-surface leading-tight mt-0.5">{fb.name}</h4>
-                    <p className="text-xs text-on-surface-variant font-medium">📞 {fb.phone || 'No Contact Provided'}</p>
+                    <p className="text-xs text-on-surface-variant font-medium flex items-center gap-1 mt-0.5">
+                      <span className="material-symbols-outlined text-xs text-primary">call</span>
+                      <span>{fb.phone || 'No Contact Provided'}</span>
+                    </p>
                   </div>
                   <span
                     className={`text-xs px-2.5 py-1 rounded-full font-bold border ${
@@ -151,7 +154,10 @@ export default function AdminFeedbackModeration() {
 
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-on-surface">Visit Date:</span>
-                    <span>📅 {fb.date}</span>
+                    <span className="flex items-center gap-1 text-on-surface font-medium">
+                      <span className="material-symbols-outlined text-xs text-primary">calendar_today</span>
+                      <span>{fb.date}</span>
+                    </span>
                   </div>
 
                   <div className="mt-2 p-3 bg-surface-container-low rounded-lg border border-outline-variant/40 text-xs italic text-on-surface">

@@ -104,11 +104,11 @@ export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, 
     let text = `*PRS DENTAL CARE - APPOINTMENT CONFIRMATION*\n\n`;
     text += `Hello *${apt.name}*,\n`;
     text += `Your dental appointment details are as follows:\n\n`;
-    text += `📅 *Date:* ${apt.date}\n`;
-    text += `⏰ *Time Slot:* ${apt.time || 'As scheduled'}\n`;
-    text += `🩺 *Procedure:* ${apt.service}\n`;
-    text += `👨‍⚕️ *Attending Doctor:* ${apt.preferredDoctor || 'PRS Specialist'}\n`;
-    text += `📍 *Location:* 58/150, Red Hills Road, Kolathur, Chennai - 600099\n\n`;
+    text += `*Date:* ${apt.date}\n`;
+    text += `*Time Slot:* ${apt.time || 'As scheduled'}\n`;
+    text += `*Procedure:* ${apt.service}\n`;
+    text += `*Attending Doctor:* ${apt.preferredDoctor || 'PRS Specialist'}\n`;
+    text += `*Location:* 58/150, Red Hills Road, Kolathur, Chennai - 600099\n\n`;
     text += `Please reach 10 minutes prior to your slot. For queries, contact +91 72007 18607.\n`;
     text += `*PRS Dental Care - Multi-Specialty Dental Clinic*`;
 
@@ -196,10 +196,10 @@ export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, 
                 onChange={(e) => setSelectedDoctorId(e.target.value)}
                 className="bg-surface-container-high text-xs font-bold text-on-surface px-3 py-1.5 rounded-lg border border-outline outline-none focus:ring-2 focus:ring-primary cursor-pointer w-full sm:w-auto max-w-full"
               >
-                <option value="all">🌐 All Doctors (Combined View)</option>
+                <option value="all">All Doctors (Combined View)</option>
                 {allAvailableDoctors.map((doc) => (
                   <option key={doc.id} value={doc.id}>
-                    🩺 {doc.name} ({doc.specialization.split('-')[0].trim()})
+                    {doc.name} ({doc.specialization.split('-')[0].trim()})
                   </option>
                 ))}
               </select>

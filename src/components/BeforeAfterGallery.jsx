@@ -67,33 +67,36 @@ export default function BeforeAfterGallery() {
       <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
         <button
           onClick={() => setActiveCategory('whitening')}
-          className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all ${
+          className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
             activeCategory === 'whitening'
               ? 'bg-primary text-on-primary shadow-md'
               : 'bg-white border border-outline-variant/30 text-on-surface-variant hover:bg-surface-container-low'
           }`}
         >
-          ✨ Teeth Whitening
+          <span className="material-symbols-outlined text-base">auto_awesome</span>
+          <span>Teeth Whitening</span>
         </button>
         <button
           onClick={() => setActiveCategory('implants')}
-          className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all ${
+          className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
             activeCategory === 'implants'
               ? 'bg-primary text-on-primary shadow-md'
               : 'bg-white border border-outline-variant/30 text-on-surface-variant hover:bg-surface-container-low'
           }`}
         >
-          🦷 Dental Implants
+          <span className="material-symbols-outlined text-base">dentistry</span>
+          <span>Dental Implants</span>
         </button>
         <button
           onClick={() => setActiveCategory('rootcanal')}
-          className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all ${
+          className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
             activeCategory === 'rootcanal'
               ? 'bg-primary text-on-primary shadow-md'
               : 'bg-white border border-outline-variant/30 text-on-surface-variant hover:bg-surface-container-low'
           }`}
         >
-          ⚡ Painless Root Canal
+          <span className="material-symbols-outlined text-base">bolt</span>
+          <span>Painless Root Canal</span>
         </button>
       </div>
 

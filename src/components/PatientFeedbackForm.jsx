@@ -95,7 +95,7 @@ export default function PatientFeedbackForm() {
                 ))}
               </div>
               <span className="text-xs font-bold text-primary block">
-                {rating === 5 ? '⭐ Excellent (5/5)' : rating === 4 ? '👍 Very Good (4/5)' : rating === 3 ? '👌 Good (3/5)' : 'Needs Improvement'}
+                {rating === 5 ? 'Excellent (5/5)' : rating === 4 ? 'Very Good (4/5)' : rating === 3 ? 'Good (3/5)' : 'Needs Improvement'}
               </span>
             </div>
 

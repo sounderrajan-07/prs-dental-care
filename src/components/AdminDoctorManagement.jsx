@@ -186,7 +186,17 @@ export default function AdminDoctorManagement() {
                 )}
                 <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
                   <span className="font-semibold text-on-surface shrink-0">Contact:</span>
-                  <span className="break-all font-medium">📞 {doc.phone || 'Not set'} • ✉️ {doc.email || 'Not set'}</span>
+                  <span className="break-all font-medium flex items-center gap-2">
+                    <span className="inline-flex items-center gap-0.5">
+                      <span className="material-symbols-outlined text-xs text-primary">call</span>
+                      <span>{doc.phone || 'Not set'}</span>
+                    </span>
+                    <span>•</span>
+                    <span className="inline-flex items-center gap-0.5">
+                      <span className="material-symbols-outlined text-xs text-primary">mail</span>
+                      <span>{doc.email || 'Not set'}</span>
+                    </span>
+                  </span>
                 </div>
 
                 {/* Access Code Box */}
