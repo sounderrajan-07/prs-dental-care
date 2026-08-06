@@ -204,11 +204,33 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
         }
       }
 
-      // On Desktop: Direct WhatsApp URL targeting patient's phone number without any text parameter
-      const waUrl = cleanPhone ? `https://api.whatsapp.com/send?phone=${cleanPhone}` : `https://api.whatsapp.com/send`;
+      // Build custom formatted message for WhatsApp without document image instruction line
+      let text = `*PRS DENTAL CARE - ${docTypeLabel.toUpperCase()}*\n\n`;
+      text += `👤 *Patient:* ${patientName}\n`;
+      text += `👨‍⚕️ *Doctor:* ${doctorName}\n`;
+      text += `📅 *Date:* ${invoiceDate}\n`;
+      if (activeTab === 'rx') {
+        text += `🩺 *Diagnosis:* ${diagnosis}\n`;
+        text += `\n*Prescribed Medications Summary:*\n`;
+        medications.forEach((m, idx) => {
+          if (m.drug) text += `${idx + 1}. ${m.drug} - ${m.dosage} (${m.duration})\n`;
+        });
+        if (clinicalAdvice) text += `\n*Advice:* ${clinicalAdvice}\n`;
+        if (nextVisitDate) text += `*Next Visit:* ${nextVisitDate}\n`;
+      } else {
+        text += `🧾 *Invoice Serial:* ${invoiceNo}\n`;
+        text += `💰 *Grand Total Payable:* ₹${grandTotal.toLocaleString('en-IN')}\n`;
+        text += `💳 *Payment Status:* ${paymentStatus} (${paymentMode})\n`;
+      }
+      text += `\n*PRS Dental Care, Kolathur, Chennai* | Contact: +91 72007 18607`;
+
+      // Direct WhatsApp URL to patient's exact phone number with formatted summary message
+      const waUrl = cleanPhone
+        ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(text)}`
+        : `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
       window.open(waUrl, '_blank');
 
-      setShareNotice(`✓ Opening WhatsApp for ${patientName} (${phone || 'No phone'}). Press Ctrl+V to paste the document image.`);
+      setShareNotice(`✓ Opening WhatsApp for ${patientName} (${phone || 'No phone'}). Document image copied to clipboard!`);
       setTimeout(() => setShareNotice(''), 6000);
     } catch (err) {
       console.error('Error sharing document on WhatsApp:', err);
