@@ -157,34 +157,10 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
       const cleanName = (patientName || 'Patient').replace(/[^a-zA-Z0-9]/g, '_');
       const filename = `PRS_Dental_${docName}_${cleanName}.png`;
 
+      // 1. Convert canvas to Blob for Clipboard copy
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
-      if (!blob) {
-        setIsGeneratingDoc(false);
-        return;
-      }
 
-      const file = new File([blob], filename, { type: 'image/png' });
-
-      // Try native Web Share API first (supported on mobile browsers like Android Chrome / iOS Safari)
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({
-            files: [file],
-            title: `PRS Dental Care - ${docTypeLabel}`,
-            text: `Patient: ${patientName} | PRS Dental Care ${docTypeLabel}`
-          });
-          setIsGeneratingDoc(false);
-          return;
-        } catch (shareErr) {
-          if (shareErr.name === 'AbortError') {
-            setIsGeneratingDoc(false);
-            return;
-          }
-        }
-      }
-
-      // Desktop / Browser Fallback:
-      // 1. Download the exact high-res PNG image
+      // 2. Download the high-res PNG image directly
       const dataUrl = canvas.toDataURL('image/png');
       const downloadLink = document.createElement('a');
       downloadLink.download = filename;
@@ -193,26 +169,48 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
       downloadLink.click();
       document.body.removeChild(downloadLink);
 
-      // 2. Open WhatsApp Web / App with clean summary message
-      const cleanPhone = phone.replace(/[^0-9]/g, '');
+      // 3. Copy image to Clipboard if supported for instant Ctrl+V pasting in WhatsApp
+      try {
+        if (navigator.clipboard && window.ClipboardItem && blob) {
+          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        }
+      } catch (clipErr) {
+        console.warn('Clipboard image copy fallback:', clipErr);
+      }
+
+      // 4. Clean phone number ensuring country code (default to 91 if 10-digit Indian number)
+      let cleanPhone = phone.replace(/[^0-9]/g, '');
+      if (cleanPhone.length === 10) {
+        cleanPhone = '91' + cleanPhone;
+      }
+
+      // 5. Build WhatsApp text targeting patient's phone number
       let text = `*PRS DENTAL CARE - ${docTypeLabel.toUpperCase()}*\n\n`;
       text += `👤 *Patient:* ${patientName}\n`;
       text += `👨‍⚕️ *Doctor:* ${doctorName}\n`;
       text += `📅 *Date:* ${invoiceDate}\n`;
       if (activeTab === 'rx') {
         text += `🩺 *Diagnosis:* ${diagnosis}\n`;
+        text += `\n*Prescribed Medications Summary:*\n`;
+        medications.forEach((m, idx) => {
+          if (m.drug) text += `${idx + 1}. ${m.drug} - ${m.dosage} (${m.duration})\n`;
+        });
+        if (clinicalAdvice) text += `\n*Advice:* ${clinicalAdvice}\n`;
+        if (nextVisitDate) text += `*Next Visit:* ${nextVisitDate}\n`;
       } else {
         text += `🧾 *Invoice Serial:* ${invoiceNo}\n`;
-        text += `💰 *Grand Total:* ₹${grandTotal.toLocaleString('en-IN')}\n`;
+        text += `💰 *Grand Total Payable:* ₹${grandTotal.toLocaleString('en-IN')}\n`;
+        text += `💳 *Payment Status:* ${paymentStatus} (${paymentMode})\n`;
       }
-      text += `\n📁 *Document Image:* ${filename} (Downloaded to your device)\n`;
-      text += `*PRS Dental Care, Kolathur, Chennai* | Contact: +91 72007 18607`;
+      text += `\n📄 *Document Image (${filename}) saved to your device & copied to clipboard!* (Press Ctrl+V to attach full document image in chat).\n`;
+      text += `\n*PRS Dental Care, Kolathur, Chennai* | Contact: +91 72007 18607`;
 
-      const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
+      // Direct WhatsApp URL to patient's exact phone number
+      const waUrl = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(text)}`;
       window.open(waUrl, '_blank');
 
-      setShareNotice(`✓ Exact Document Image (${filename}) downloaded! Please attach the image in WhatsApp.`);
-      setTimeout(() => setShareNotice(''), 7000);
+      setShareNotice(`✓ Opened WhatsApp chat for ${patientName} (${phone})! Press Ctrl + V to attach the document image.`);
+      setTimeout(() => setShareNotice(''), 8000);
     } catch (err) {
       console.error('Error sharing document on WhatsApp:', err);
     } finally {
