@@ -182,3 +182,134 @@ export const getPatientHistoryStats = () => {
     totalRevenue: `₹${totalRevenue.toLocaleString('en-IN')}`
   };
 };
+
+export const downloadPatientHistoryExcel = (records = []) => {
+  const historyList = records.length > 0 ? records : getStoredPatientHistory();
+
+  const totalRevenue = historyList.reduce((acc, r) => {
+    const numericCost = Number(String(r.cost || 0).replace(/[^0-9]/g, ''));
+    return acc + numericCost;
+  }, 0);
+
+  const completedCount = historyList.filter((r) => r.status === 'Completed').length;
+  const inProgressCount = historyList.filter((r) => r.status === 'In Progress').length;
+
+  let excelHtml = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+      <meta charset="utf-8">
+      <!--[if gte mso 9]>
+      <xml>
+        <x:ExcelWorkbook>
+          <x:ExcelWorksheets>
+            <x:ExcelWorksheet>
+              <x:Name>Patient Treatment History</x:Name>
+              <x:WorksheetOptions>
+                <x:DisplayGridlines/>
+              </x:WorksheetOptions>
+            </x:ExcelWorksheet>
+          </x:ExcelWorksheets>
+        </x:ExcelWorkbook>
+      </xml>
+      <![endif]-->
+      <style>
+        body { font-family: Arial, sans-serif; font-size: 12px; }
+        .header-title { font-size: 18px; font-weight: bold; color: #0f4c81; text-align: center; }
+        .subtitle { font-size: 12px; color: #555555; text-align: center; }
+        .meta-label { font-weight: bold; color: #333; }
+        .meta-val { color: #0f4c81; font-weight: bold; }
+        .section-header { background-color: #0f4c81; color: #ffffff; font-size: 13px; font-weight: bold; padding: 6px; }
+        .th-cell { background-color: #e3f2fd; color: #0d47a1; font-weight: bold; border: 1px solid #bbdefb; padding: 8px; text-align: left; }
+        .td-cell { border: 1px solid #e0e0e0; padding: 6px; vertical-align: middle; }
+        .td-center { text-align: center; }
+        .td-right { text-align: right; }
+        .row-alt { background-color: #f9f9f9; }
+        .badge-completed { font-weight: bold; color: #155724; background-color: #d4edda; text-align: center; }
+        .badge-progress { font-weight: bold; color: #856404; background-color: #fff3cd; text-align: center; }
+      </style>
+    </head>
+    <body>
+      <table>
+        <tr>
+          <td colspan="11" class="header-title">PRS DENTAL CARE - PATIENT TREATMENT HISTORY &amp; CLINIC AUDIT REPORT</td>
+        </tr>
+        <tr>
+          <td colspan="11" class="subtitle">Multi-Specialty Dental Clinic &amp; Implant Center • 58/150, Red Hills Road, Kolathur, Chennai - 600099</td>
+        </tr>
+        <tr><td colspan="11"></td></tr>
+        <tr>
+          <td colspan="3" class="meta-label">Generated Date &amp; Time:</td>
+          <td colspan="8" class="meta-val">${new Date().toLocaleString()}</td>
+        </tr>
+        <tr>
+          <td colspan="3" class="meta-label">Total Patients Logged:</td>
+          <td colspan="8" class="meta-val">${historyList.length} Records</td>
+        </tr>
+        <tr>
+          <td colspan="3" class="meta-label">Total Revenue Collected:</td>
+          <td colspan="8" class="meta-val" style="color: #155724;">₹${totalRevenue.toLocaleString('en-IN')}</td>
+        </tr>
+        <tr>
+          <td colspan="3" class="meta-label">Completed Procedures:</td>
+          <td colspan="8" class="meta-val">${completedCount} Completed | ${inProgressCount} In Progress</td>
+        </tr>
+        <tr><td colspan="11"></td></tr>
+
+        <!-- TABLE HEADER -->
+        <tr>
+          <td colspan="11" class="section-header">DETAILED PATIENT TREATMENT &amp; CLINICAL AUDIT LOGS</td>
+        </tr>
+        <tr>
+          <th class="th-cell" style="width: 100px;">Record ID</th>
+          <th class="th-cell" style="width: 110px;">Date</th>
+          <th class="th-cell" style="width: 180px;">Patient Name</th>
+          <th class="th-cell" style="width: 140px;">Phone Number</th>
+          <th class="th-cell" style="width: 180px;">Email Address</th>
+          <th class="th-cell" style="width: 260px;">Treatment / Procedure</th>
+          <th class="th-cell" style="width: 180px;">Attending Specialist</th>
+          <th class="th-cell" style="width: 150px;">Time Slot / Duration</th>
+          <th class="th-cell" style="width: 110px; text-align: right;">Fee (₹)</th>
+          <th class="th-cell" style="width: 110px; text-align: center;">Status</th>
+          <th class="th-cell" style="width: 280px;">Clinical Procedure Notes</th>
+        </tr>
+  `;
+
+  historyList.forEach((rec, idx) => {
+    const bgClass = idx % 2 === 1 ? 'row-alt' : '';
+    const badgeClass = rec.status === 'Completed' ? 'badge-completed' : 'badge-progress';
+    const formattedCost = String(rec.cost || '₹0').startsWith('₹') ? rec.cost : `₹${Number(rec.cost || 0).toLocaleString('en-IN')}`;
+
+    excelHtml += `
+      <tr class="${bgClass}">
+        <td class="td-cell td-center" style="font-weight: bold; color: #555;">${rec.id}</td>
+        <td class="td-cell td-center" style="font-weight: bold;">${rec.treatmentDate}</td>
+        <td class="td-cell" style="font-weight: bold; color: #0f4c81;">${rec.patientName}</td>
+        <td class="td-cell">${rec.patientPhone || '-'}</td>
+        <td class="td-cell">${rec.patientEmail || '-'}</td>
+        <td class="td-cell" style="font-weight: bold;">${rec.treatmentName}</td>
+        <td class="td-cell">${rec.attendingDoctor}</td>
+        <td class="td-cell td-center">${rec.timeSlot || ''} (${rec.duration || '-'})</td>
+        <td class="td-cell td-right" style="font-weight: bold; color: #155724;">${formattedCost}</td>
+        <td class="td-cell ${badgeClass}">${rec.status}</td>
+        <td class="td-cell" style="font-style: italic;">${rec.notes || '-'}</td>
+      </tr>
+    `;
+  });
+
+  excelHtml += `
+      </table>
+    </body>
+    </html>
+  `;
+
+  const dateStr = new Date().toISOString().split('T')[0];
+  const filename = `PRS_Dental_Patient_Treatment_History_${dateStr}.xls`;
+
+  const blob = new Blob([excelHtml], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};

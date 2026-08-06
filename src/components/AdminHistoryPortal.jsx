@@ -4,7 +4,8 @@ import {
   savePatientHistoryRecord,
   updatePatientHistoryRecord,
   deletePatientHistoryRecord,
-  getPatientHistoryStats
+  getPatientHistoryStats,
+  downloadPatientHistoryExcel
 } from '../utils/patientHistoryStorage';
 import { getStoredDoctors } from '../utils/doctorStorage';
 import InvoiceRxGeneratorModal from './InvoiceRxGeneratorModal';
@@ -225,6 +226,10 @@ export default function AdminHistoryPortal({ onLogout }) {
     return true;
   });
 
+  const handleDownloadExcel = () => {
+    downloadPatientHistoryExcel(filteredHistory);
+  };
+
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* Admin Header Banner */}
@@ -246,6 +251,15 @@ export default function AdminHistoryPortal({ onLogout }) {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={handleDownloadExcel}
+            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-sm transition-colors"
+            title="Download Patient Treatment History Log in Formatted Excel (.xls)"
+          >
+            <span className="material-symbols-outlined text-base">table_chart</span>
+            <span>Download Formatted Excel (.xls)</span>
+          </button>
+
           <button
             onClick={handleExportBackup}
             className="px-3.5 py-2.5 border border-outline bg-surface rounded-xl text-xs font-bold text-on-surface hover:bg-surface-container-high transition-colors flex items-center gap-1.5 shadow-xs"
@@ -371,6 +385,16 @@ export default function AdminHistoryPortal({ onLogout }) {
               <option value="Completed">Completed</option>
               <option value="In Progress">In Progress</option>
             </select>
+
+            {/* Download Formatted Excel Button */}
+            <button
+              onClick={handleDownloadExcel}
+              className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-sm transition-colors"
+              title="Download Patient Treatment History Log in Formatted Excel (.xls)"
+            >
+              <span className="material-symbols-outlined text-base">table_chart</span>
+              <span>Download Formatted Excel (.xls)</span>
+            </button>
           </div>
         </div>
 
