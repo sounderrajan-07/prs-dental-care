@@ -184,33 +184,12 @@ export default function InvoiceRxGeneratorModal({ isOpen, onClose, initialData =
         cleanPhone = '91' + cleanPhone;
       }
 
-      // 5. Build WhatsApp text targeting patient's phone number
-      let text = `*PRS DENTAL CARE - ${docTypeLabel.toUpperCase()}*\n\n`;
-      text += `👤 *Patient:* ${patientName}\n`;
-      text += `👨‍⚕️ *Doctor:* ${doctorName}\n`;
-      text += `📅 *Date:* ${invoiceDate}\n`;
-      if (activeTab === 'rx') {
-        text += `🩺 *Diagnosis:* ${diagnosis}\n`;
-        text += `\n*Prescribed Medications Summary:*\n`;
-        medications.forEach((m, idx) => {
-          if (m.drug) text += `${idx + 1}. ${m.drug} - ${m.dosage} (${m.duration})\n`;
-        });
-        if (clinicalAdvice) text += `\n*Advice:* ${clinicalAdvice}\n`;
-        if (nextVisitDate) text += `*Next Visit:* ${nextVisitDate}\n`;
-      } else {
-        text += `🧾 *Invoice Serial:* ${invoiceNo}\n`;
-        text += `💰 *Grand Total Payable:* ₹${grandTotal.toLocaleString('en-IN')}\n`;
-        text += `💳 *Payment Status:* ${paymentStatus} (${paymentMode})\n`;
-      }
-      text += `\n📄 *Document Image (${filename}) saved to your device & copied to clipboard!* (Press Ctrl+V to attach full document image in chat).\n`;
-      text += `\n*PRS Dental Care, Kolathur, Chennai* | Contact: +91 72007 18607`;
-
-      // Direct WhatsApp URL to patient's exact phone number
-      const waUrl = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(text)}`;
+      // Direct WhatsApp URL to patient's exact phone number without any extra text message
+      const waUrl = cleanPhone ? `https://api.whatsapp.com/send?phone=${cleanPhone}` : `https://api.whatsapp.com/send`;
       window.open(waUrl, '_blank');
 
-      setShareNotice(`✓ Opened WhatsApp chat for ${patientName} (${phone})! Press Ctrl + V to attach the document image.`);
-      setTimeout(() => setShareNotice(''), 8000);
+      setShareNotice(`✓ Opening WhatsApp for ${patientName} (${phone || 'No phone'}). Press Ctrl+V to paste the document image.`);
+      setTimeout(() => setShareNotice(''), 6000);
     } catch (err) {
       console.error('Error sharing document on WhatsApp:', err);
     } finally {
