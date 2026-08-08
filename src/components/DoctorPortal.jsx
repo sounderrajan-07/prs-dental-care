@@ -5,6 +5,53 @@ import { savePatientHistoryRecord } from '../utils/patientHistoryStorage';
 import { dispatchPatientNotifications, generateAppointmentMessage } from '../utils/notificationService';
 import InvoiceRxGeneratorModal from './InvoiceRxGeneratorModal';
 
+/**
+ * Smart Doctor Assignment Matching Helper
+ * Matches appointments with doctor objects regardless of degree suffixes or formatting variations
+ * (e.g. matches "Dr. Keerthi.T.M.D.S (Pedodontist)" with "Dr. Keerthi.T")
+ */
+export const isAppointmentAssignedToDoctor = (aptDoctor, activeDocObj) => {
+  if (!activeDocObj || activeDocObj.id === 'all') return true;
+  if (!aptDoctor) return false;
+
+  const aptDocStr = String(aptDoctor).toLowerCase().trim();
+  const docName = String(activeDocObj.name || '').toLowerCase().trim();
+  const docId = String(activeDocObj.id || '').toLowerCase().trim();
+
+  // 1. Direct ID or Name match
+  if (aptDocStr === docId || aptDocStr === docName) return true;
+
+  // Helper to extract clean base name without titles, degrees, and specialization in parens
+  const getBaseName = (str) => {
+    return str
+      .replace(/^dr\.?\s*/i, '')           // remove Dr / Dr.
+      .replace(/\(.*\)/g, '')              // remove parens e.g. (Pedodontist)
+      .replace(/m\.?d\.?s\.?/gi, '')       // remove MDS / M.D.S
+      .replace(/fcip/gi, '')               // remove FCIP
+      .replace(/[^a-z0-9]/g, '')           // remove special characters & spaces
+      .trim();
+  };
+
+  const baseAptDoc = getBaseName(aptDocStr);
+  const baseActiveDoc = getBaseName(docName);
+
+  if (baseAptDoc && baseActiveDoc) {
+    if (baseAptDoc === baseActiveDoc || baseAptDoc.includes(baseActiveDoc) || baseActiveDoc.includes(baseAptDoc)) {
+      return true;
+    }
+  }
+
+  // Fallback: match by key name words (e.g., "keerthi", "purushotham", "wasim", "ragavendra")
+  const nameWords = docName.replace(/^dr\.?\s*/i, '').split(/[^a-z0-9]/i).filter((w) => w.length > 2);
+  for (const word of nameWords) {
+    if (aptDocStr.includes(word.toLowerCase())) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
 export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, doctorList = [] }) {
   const [appointments, setAppointments] = useState([]);
   const [activeTab, setActiveTab] = useState('Pending');
@@ -65,12 +112,9 @@ export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, 
 
   // Filter appointments according to selected doctor view & active tab & search query
   const doctorAppointments = appointments.filter((apt) => {
-    // If not 'all', filter strictly by assigned doctor
+    // If not 'all', filter strictly by assigned doctor (using flexible matching helper)
     if (selectedDoctorId !== 'all') {
-      const isAssignedToThisDoctor =
-        apt.preferredDoctor === activeDocObj.name ||
-        apt.preferredDoctor === activeDocObj.id;
-
+      const isAssignedToThisDoctor = isAppointmentAssignedToDoctor(apt.preferredDoctor, activeDocObj);
       if (!isAssignedToThisDoctor) return false;
     }
 
@@ -247,7 +291,7 @@ export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, 
   // Base list of appointments matching the doctor filter for KPI card calculation
   const baseAppointments = appointments.filter((a) => {
     if (selectedDoctorId === 'all') return true;
-    return a.preferredDoctor === activeDocObj.name || a.preferredDoctor === activeDocObj.id;
+    return isAppointmentAssignedToDoctor(a.preferredDoctor, activeDocObj);
   });
 
   const counts = {
