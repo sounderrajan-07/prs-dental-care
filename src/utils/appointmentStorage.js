@@ -126,7 +126,7 @@ export const saveAppointment = (appointmentData) => {
   try {
     const current = getStoredAppointments();
     const newApt = {
-      id: `APT-${1000 + current.length + 1}`,
+      id: appointmentData.id || `APT-${1000 + current.length + 1}`,
       name: appointmentData.name,
       phone: appointmentData.phone,
       email: appointmentData.email || '',
@@ -137,7 +137,7 @@ export const saveAppointment = (appointmentData) => {
       duration: '45 mins',
       notes: appointmentData.notes || '',
       doctorRemarks: '',
-      status: 'Pending',
+      status: appointmentData.status || 'Pending',
       treatmentStatus: 'Consultation',
       cost: '₹0',
       createdAt: new Date().toISOString()
@@ -145,6 +145,14 @@ export const saveAppointment = (appointmentData) => {
 
     const updated = [newApt, ...current];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+
+    // Automatically sync to Neon PostgreSQL API
+    fetch('/api/appointments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newApt)
+    }).catch(() => {});
+
     return newApt;
   } catch (err) {
     console.error('Error saving appointment:', err);
@@ -155,9 +163,10 @@ export const saveAppointment = (appointmentData) => {
 export const updateStoredStatus = (id, newStatus, doctorRemarks = '', duration = '', notificationMeta = null) => {
   try {
     const current = getStoredAppointments();
+    let targetApt = null;
     const updated = current.map((apt) => {
       if (apt.id === id) {
-        return {
+        targetApt = {
           ...apt,
           status: newStatus,
           doctorRemarks: doctorRemarks || apt.doctorRemarks,
@@ -168,10 +177,19 @@ export const updateStoredStatus = (id, newStatus, doctorRemarks = '', duration =
           lastNotificationTime: new Date().toISOString(),
           ...(notificationMeta || {})
         };
+        return targetApt;
       }
       return apt;
     });
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+
+    // Automatically sync status update to Neon PostgreSQL API
+    fetch(`/api/appointments/${id}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus, doctorRemarks, duration })
+    }).catch(() => {});
+
     return updated;
   } catch (err) {
     console.error('Error updating appointment status:', err);
@@ -181,8 +199,25 @@ export const updateStoredStatus = (id, newStatus, doctorRemarks = '', duration =
 export const updateAppointmentDetails = (id, updates) => {
   try {
     const current = getStoredAppointments();
-    const updated = current.map((apt) => (apt.id === id ? { ...apt, ...updates } : apt));
+    let targetApt = null;
+    const updated = current.map((apt) => {
+      if (apt.id === id) {
+        targetApt = { ...apt, ...updates };
+        return targetApt;
+      }
+      return apt;
+    });
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+
+    // Sync to Neon PostgreSQL API
+    if (targetApt) {
+      fetch(`/api/appointments/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: targetApt.status || 'Pending', doctorRemarks: targetApt.doctorRemarks, duration: targetApt.duration })
+      }).catch(() => {});
+    }
+
     return updated;
   } catch (err) {
     console.error('Error updating appointment details:', err);
@@ -194,6 +229,12 @@ export const deleteAppointmentRecord = (id) => {
     const current = getStoredAppointments();
     const updated = current.filter((apt) => apt.id !== id);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+
+    // Delete in Neon PostgreSQL API
+    fetch(`/api/appointments/${id}`, {
+      method: 'DELETE'
+    }).catch(() => {});
+
     return updated;
   } catch (err) {
     console.error('Error deleting appointment:', err);
