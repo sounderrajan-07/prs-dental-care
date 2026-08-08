@@ -77,12 +77,20 @@ export const saveFeedback = (feedbackData) => {
       treatment: feedbackData.treatment || 'General Dental Care',
       comment: feedbackData.comment,
       date: feedbackData.date || new Date().toISOString().split('T')[0],
-      status: 'Pending', // Requires Admin Approval
+      status: feedbackData.status || 'Pending', // Requires Admin Approval
       submittedAt: new Date().toISOString()
     };
 
     const updated = [newFeedback, ...current];
     localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(updated));
+
+    // Automatically sync to Neon PostgreSQL API
+    fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newFeedback)
+    }).catch(() => {});
+
     return newFeedback;
   } catch (err) {
     console.error('Error saving patient feedback:', err);
@@ -93,8 +101,32 @@ export const saveFeedback = (feedbackData) => {
 export const updateFeedbackStatus = (id, newStatus) => {
   try {
     const current = getStoredFeedbacks();
-    const updated = current.map((item) => (item.id === id ? { ...item, status: newStatus } : item));
+    let targetFb = null;
+    const updated = current.map((item) => {
+      if (item.id === id) {
+        targetFb = { ...item, status: newStatus };
+        return targetFb;
+      }
+      return item;
+    });
     localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(updated));
+
+    // Automatically update status in Neon PostgreSQL API
+    fetch(`/api/feedback/${id}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
+    }).catch(() => {});
+
+    // Also sync full record if needed
+    if (targetFb) {
+      fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(targetFb)
+      }).catch(() => {});
+    }
+
     return updated;
   } catch (err) {
     console.error('Error updating feedback status:', err);
@@ -106,6 +138,12 @@ export const deleteStoredFeedback = (id) => {
     const current = getStoredFeedbacks();
     const updated = current.filter((item) => item.id !== id);
     localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(updated));
+
+    // Delete in Neon PostgreSQL API
+    fetch(`/api/feedback/${id}`, {
+      method: 'DELETE'
+    }).catch(() => {});
+
     return updated;
   } catch (err) {
     console.error('Error deleting feedback:', err);

@@ -260,4 +260,168 @@ app.post('/api/attendance', async (req, res) => {
   res.status(200).json({ success: true, data: entry });
 });
 
+// ----------------------------------------------------
+// 4. PATIENT FEEDBACK & REVIEWS ENDPOINTS
+// ----------------------------------------------------
+app.get('/api/feedback', async (req, res) => {
+  if (sql) {
+    try {
+      const rows = await sql`SELECT * FROM patient_feedback ORDER BY created_at DESC`;
+      return res.status(200).json({ success: true, count: rows.length, data: rows });
+    } catch (err) {
+      console.error('Fetch feedback error:', err);
+    }
+  }
+  res.status(200).json({ success: true, data: memoryStore.feedback });
+});
+
+app.post('/api/feedback', async (req, res) => {
+  const { id, name, phone, rating, treatment, comment, date, status } = req.body;
+  if (!name || !comment) {
+    return res.status(400).json({ success: false, message: 'Missing required fields: name, comment' });
+  }
+
+  const fbId = id || `FB-${Date.now().toString().slice(-6)}`;
+  const newFb = {
+    id: fbId,
+    name,
+    phone: phone || '',
+    rating: Number(rating) || 5,
+    treatment: treatment || 'General Dental Care',
+    comment,
+    date: date || new Date().toISOString().split('T')[0],
+    status: status || 'Pending',
+    created_at: new Date().toISOString()
+  };
+
+  if (sql) {
+    try {
+      await sql`
+        INSERT INTO patient_feedback (id, name, phone, rating, treatment, comment, date, status)
+        VALUES (${newFb.id}, ${newFb.name}, ${newFb.phone}, ${newFb.rating}, ${newFb.treatment}, ${newFb.comment}, ${newFb.date}, ${newFb.status})
+        ON CONFLICT (id) DO UPDATE SET
+          name = EXCLUDED.name,
+          phone = EXCLUDED.phone,
+          rating = EXCLUDED.rating,
+          treatment = EXCLUDED.treatment,
+          comment = EXCLUDED.comment,
+          date = EXCLUDED.date,
+          status = EXCLUDED.status
+      `;
+      console.log(`[Neon DB Sync] Feedback ${newFb.id} (${newFb.name}) saved in Neon PostgreSQL.`);
+      return res.status(201).json({ success: true, message: 'Feedback saved in Neon DB', data: newFb });
+    } catch (err) {
+      console.error('Insert feedback error:', err);
+    }
+  }
+
+  memoryStore.feedback.unshift(newFb);
+  res.status(201).json({ success: true, message: 'Feedback saved locally', data: newFb });
+});
+
+app.put('/api/feedback/:id/status', async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  if (sql) {
+    try {
+      await sql`UPDATE patient_feedback SET status = ${status} WHERE id = ${id}`;
+      console.log(`[Neon DB Sync] Feedback ${id} status updated to ${status} in Neon PostgreSQL.`);
+      return res.status(200).json({ success: true, message: `Feedback ${id} status updated to ${status}` });
+    } catch (err) {
+      console.error('Update feedback status error:', err);
+    }
+  }
+
+  const item = memoryStore.feedback.find((f) => f.id === id);
+  if (item) item.status = status;
+  res.status(200).json({ success: true, message: `Updated status for feedback ${id}` });
+});
+
+app.delete('/api/feedback/:id', async (req, res) => {
+  const { id } = req.params;
+  if (sql) {
+    try {
+      await sql`DELETE FROM patient_feedback WHERE id = ${id}`;
+      return res.status(200).json({ success: true, message: `Feedback ${id} deleted` });
+    } catch (err) {
+      console.error('Delete feedback error:', err);
+    }
+  }
+  memoryStore.feedback = memoryStore.feedback.filter((f) => f.id !== id);
+  res.status(200).json({ success: true, message: `Feedback ${id} deleted` });
+});
+
+// ----------------------------------------------------
+// 5. PATIENT HISTORY ENDPOINTS
+// ----------------------------------------------------
+app.get('/api/patient-history', async (req, res) => {
+  if (sql) {
+    try {
+      const rows = await sql`SELECT * FROM patient_history ORDER BY treatment_date DESC, created_at DESC`;
+      return res.status(200).json({ success: true, count: rows.length, data: rows });
+    } catch (err) {
+      console.error('Fetch patient history error:', err);
+    }
+  }
+  res.status(200).json({ success: true, data: memoryStore.patientHistory });
+});
+
+app.post('/api/patient-history', async (req, res) => {
+  const { id, patientName, patientPhone, patientEmail, treatmentName, attendingDoctor, doctorSpecialization, treatmentDate, timeSlot, duration, cost, status, notes } = req.body;
+  const recId = id || `HIS-${Date.now().toString().slice(-6)}`;
+  const record = {
+    id: recId,
+    patient_name: patientName,
+    patient_phone: patientPhone || '',
+    patient_email: patientEmail || '',
+    treatment_name: treatmentName,
+    attending_doctor: attendingDoctor || '',
+    doctor_specialization: doctorSpecialization || '',
+    treatment_date: treatmentDate || new Date().toISOString().split('T')[0],
+    time_slot: timeSlot || '',
+    duration: duration || '45 mins',
+    cost: cost || '₹0',
+    status: status || 'Completed',
+    notes: notes || ''
+  };
+
+  if (sql) {
+    try {
+      await sql`
+        INSERT INTO patient_history (id, patient_name, patient_phone, patient_email, treatment_name, attending_doctor, doctor_specialization, treatment_date, time_slot, duration, cost, status, notes)
+        VALUES (${record.id}, ${record.patient_name}, ${record.patient_phone}, ${record.patient_email}, ${record.treatment_name}, ${record.attending_doctor}, ${record.doctor_specialization}, ${record.treatment_date}, ${record.time_slot}, ${record.duration}, ${record.cost}, ${record.status}, ${record.notes})
+        ON CONFLICT (id) DO UPDATE SET
+          patient_name = EXCLUDED.patient_name,
+          patient_phone = EXCLUDED.patient_phone,
+          treatment_name = EXCLUDED.treatment_name,
+          attending_doctor = EXCLUDED.attending_doctor,
+          status = EXCLUDED.status,
+          notes = EXCLUDED.notes
+      `;
+      console.log(`[Neon DB Sync] Patient history record ${record.id} (${record.patient_name}) saved in Neon PostgreSQL.`);
+      return res.status(201).json({ success: true, message: 'Patient history record saved in Neon DB', data: record });
+    } catch (err) {
+      console.error('Insert patient history error:', err);
+    }
+  }
+
+  memoryStore.patientHistory.unshift(record);
+  res.status(201).json({ success: true, data: record });
+});
+
+app.delete('/api/patient-history/:id', async (req, res) => {
+  const { id } = req.params;
+  if (sql) {
+    try {
+      await sql`DELETE FROM patient_history WHERE id = ${id}`;
+      return res.status(200).json({ success: true, message: `Patient history record ${id} deleted` });
+    } catch (err) {
+      console.error('Delete patient history error:', err);
+    }
+  }
+  memoryStore.patientHistory = memoryStore.patientHistory.filter((h) => h.id !== id);
+  res.status(200).json({ success: true, message: `Patient history record ${id} deleted` });
+});
+
 export default app;

@@ -111,7 +111,7 @@ export const savePatientHistoryRecord = (recordData) => {
   try {
     const current = getStoredPatientHistory();
     const newRecord = {
-      id: `HIS-${5000 + current.length + 1}`,
+      id: recordData.id || `HIS-${5000 + current.length + 1}`,
       patientName: recordData.patientName,
       patientPhone: recordData.patientPhone || '',
       patientEmail: recordData.patientEmail || '',
@@ -128,6 +128,14 @@ export const savePatientHistoryRecord = (recordData) => {
 
     const updated = [newRecord, ...current];
     localStorage.setItem(PATIENT_HISTORY_KEY, JSON.stringify(updated));
+
+    // Automatically sync to Neon PostgreSQL API
+    fetch('/api/patient-history', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newRecord)
+    }).catch(() => {});
+
     return newRecord;
   } catch (err) {
     console.error('Error saving patient history record:', err);
@@ -138,17 +146,29 @@ export const savePatientHistoryRecord = (recordData) => {
 export const updatePatientHistoryRecord = (id, updates) => {
   try {
     const current = getStoredPatientHistory();
+    let targetRec = null;
     const updated = current.map((rec) => {
       if (rec.id === id) {
-        return {
+        targetRec = {
           ...rec,
           ...updates,
           cost: updates.cost ? (updates.cost.startsWith('₹') ? updates.cost : `₹${updates.cost}`) : rec.cost
         };
+        return targetRec;
       }
       return rec;
     });
     localStorage.setItem(PATIENT_HISTORY_KEY, JSON.stringify(updated));
+
+    // Automatically update record in Neon PostgreSQL API
+    if (targetRec) {
+      fetch('/api/patient-history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(targetRec)
+      }).catch(() => {});
+    }
+
     return updated;
   } catch (err) {
     console.error('Error updating patient history record:', err);
@@ -161,6 +181,12 @@ export const deletePatientHistoryRecord = (id) => {
     const current = getStoredPatientHistory();
     const updated = current.filter((rec) => rec.id !== id);
     localStorage.setItem(PATIENT_HISTORY_KEY, JSON.stringify(updated));
+
+    // Delete in Neon PostgreSQL API
+    fetch(`/api/patient-history/${id}`, {
+      method: 'DELETE'
+    }).catch(() => {});
+
     return updated;
   } catch (err) {
     console.error('Error deleting patient history record:', err);
