@@ -155,11 +155,15 @@ export default function BookingModal({ isOpen, onClose, initialService = '' }) {
                   required
                 >
                   <option value="Any Available Specialist">Any Available Specialist (Clinic Choice)</option>
-                  {doctorsList.map((doc) => (
-                    <option key={doc.id} value={doc.name}>
-                      {doc.name} ({doc.specialization})
-                    </option>
-                  ))}
+                  {doctorsList.map((doc) => {
+                    const specShort = (doc.specialization || '').split('-')[0].split('(')[0].trim();
+                    const label = `${doc.name} ${doc.degree || 'M.D.S'} (${specShort})`;
+                    return (
+                      <option key={doc.id} value={label}>
+                        {label}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
 

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ContactModal from '../components/ContactModal';
 import { saveAppointment } from '../utils/appointmentStorage';
+import { getStoredDoctors } from '../utils/doctorStorage';
 import SEO from '../components/SEO';
 
 export default function BookAppointment() {
@@ -10,20 +11,29 @@ export default function BookAppointment() {
   const preselectedService = searchParams.get('service') || '';
   const preselectedDoctor = searchParams.get('doctor') || '';
 
-  const doctorOptions = [
-    'Any Available Specialist',
-    'Dr. Vijaya Kumar M.D.S (Pedodontist)',
-    'Dr. Keerthi.T M.D.S (Pedodontist)',
-    'Dr. Ragavendra M.D.S (Orthodontist)',
-    'Dr. Yunus Amin M.D.S (Orthodontist)',
-    'Dr. Wasim Ahamed M.D.S (Oral Surgeon)',
-    'Dr. Naren Kumar M.D.S, FCIP (Oral Surgeon)',
-    'Dr. Samu Fathima M.D.S (Oral Radiology)',
-    'Dr. Yoga Rajan M.D.S (Periodontist)',
-    'Dr. Purushotham M.D.S (Endodontist)',
-    'Dr. Faiz M.D.S (Implantologist)',
-    'Dr. Kiran Kumar. P M.D.S (Implantologist)',
-  ];
+  // Dynamic doctor list loaded from store
+  const [doctorsList, setDoctorsList] = useState(() => getStoredDoctors());
+
+  const loadDoctors = () => {
+    setDoctorsList(getStoredDoctors());
+  };
+
+  useEffect(() => {
+    loadDoctors();
+    window.addEventListener('prs_doctors_updated', loadDoctors);
+    return () => window.removeEventListener('prs_doctors_updated', loadDoctors);
+  }, []);
+
+  // Formatted doctor option labels for dropdown
+  const doctorOptions = useMemo(() => {
+    const options = ['Any Available Specialist'];
+    doctorsList.forEach((doc) => {
+      const specShort = (doc.specialization || '').split('-')[0].split('(')[0].trim();
+      const label = `${doc.name} ${doc.degree || 'M.D.S'} (${specShort})`;
+      options.push(label);
+    });
+    return options;
+  }, [doctorsList]);
 
   const servicesList = [
     'General Consultation & Checkup',
@@ -41,12 +51,29 @@ export default function BookAppointment() {
     if (!doctorQuery) return 'Any Available Specialist';
     const cleanQuery = decodeURIComponent(doctorQuery).toLowerCase().trim();
     
-    const matched = doctorOptions.find((opt) => {
-      const optLower = opt.toLowerCase();
-      return optLower.includes(cleanQuery) || cleanQuery.includes(optLower.split(' m.d.s')[0]);
+    // First check exact option string matches
+    const exactOpt = doctorOptions.find((opt) => opt.toLowerCase().includes(cleanQuery));
+    if (exactOpt) return exactOpt;
+
+    // Then match by base doctor name (e.g. Dr. Soundher S)
+    const foundDoc = doctorsList.find((doc) => {
+      const docNameClean = doc.name.toLowerCase().trim();
+      const nameWithoutTitle = docNameClean.replace(/^dr\.?\s*/i, '');
+      const queryWithoutTitle = cleanQuery.replace(/^dr\.?\s*/i, '');
+
+      return (
+        docNameClean.includes(queryWithoutTitle) ||
+        queryWithoutTitle.includes(nameWithoutTitle) ||
+        docNameClean.includes(cleanQuery)
+      );
     });
-    
-    return matched || 'Any Available Specialist';
+
+    if (foundDoc) {
+      const specShort = (foundDoc.specialization || '').split('-')[0].split('(')[0].trim();
+      return `${foundDoc.name} ${foundDoc.degree || 'M.D.S'} (${specShort})`;
+    }
+
+    return 'Any Available Specialist';
   };
 
   const findMatchingService = (serviceQuery) => {
@@ -91,7 +118,7 @@ export default function BookAppointment() {
         service: rawService ? findMatchingService(rawService) : prev.service,
       }));
     }
-  }, [searchParams]);
+  }, [searchParams, doctorsList, doctorOptions]);
 
   const morningSlots = [
     '10:00 AM - 11:00 AM',
@@ -144,9 +171,9 @@ export default function BookAppointment() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
+    <div className="py-12 px-4 sm:px-6 lg:px-8 bg-surface animate-fadeIn">
       <SEO
-        title="Book Dental Appointment Online | PRS Dental Care Kolathur"
+        title="Book Appointment | PRS Dental Care Kolathur Chennai"
         description="Book your appointment online at PRS Dental Care, Kolathur, Chennai. Choose your specialist dentist, preferred date & time for instant confirmation."
         keywords="Book dentist appointment Kolathur, Dental consultation Chennai, PRS Dental appointment, Dentist booking Kolathur"
         canonical="https://prsdentalcare.com/book-appointment"
@@ -178,17 +205,16 @@ export default function BookAppointment() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              
-              {/* Step 1: Treatment */}
+              {/* Step 1: Select Service & Doctor */}
               <div>
                 <h3 className="text-sm font-bold text-primary uppercase tracking-wider mb-3 flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-primary text-white text-xs flex items-center justify-center font-bold">1</span>
-                  Select Treatment & Doctor
+                  Select Procedure & Specialist
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="appointment-service" className="block text-xs font-bold text-on-surface mb-1.5">
-                      Service / Procedure
+                      Treatment / Service Needed
                     </label>
                     <select
                       id="appointment-service"
@@ -196,7 +222,6 @@ export default function BookAppointment() {
                       value={formData.service}
                       onChange={(e) => setFormData({ ...formData, service: e.target.value })}
                       className="w-full px-4 py-3 rounded-xl border border-outline-variant/60 focus:outline-none focus:border-primary text-sm font-medium bg-surface-bright"
-                      required
                     >
                       {servicesList.map((svc, i) => (
                         <option key={i} value={svc}>
@@ -295,16 +320,16 @@ export default function BookAppointment() {
                   <span className="w-6 h-6 rounded-full bg-primary text-white text-xs flex items-center justify-center font-bold">3</span>
                   Patient Contact Details
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="appointment-name" className="block text-xs font-bold text-on-surface mb-1.5">
-                      Full Name *
+                      Full Name
                     </label>
                     <input
                       id="appointment-name"
                       name="name"
                       type="text"
-                      placeholder="e.g. Ramesh Kumar"
+                      placeholder="Enter patient full name"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="w-full px-4 py-3 rounded-xl border border-outline-variant/60 focus:outline-none focus:border-primary text-sm font-medium bg-surface-bright"
@@ -315,7 +340,7 @@ export default function BookAppointment() {
 
                   <div>
                     <label htmlFor="appointment-phone" className="block text-xs font-bold text-on-surface mb-1.5">
-                      Mobile Phone Number *
+                      Phone Number (WhatsApp Preferred)
                     </label>
                     <input
                       id="appointment-phone"
@@ -331,7 +356,7 @@ export default function BookAppointment() {
                   </div>
                 </div>
 
-                <div className="mb-4">
+                <div className="mt-4">
                   <label htmlFor="appointment-email" className="block text-xs font-bold text-on-surface mb-1.5">
                     Email Address (Optional)
                   </label>
@@ -339,7 +364,7 @@ export default function BookAppointment() {
                     id="appointment-email"
                     name="email"
                     type="email"
-                    placeholder="patient@example.com"
+                    placeholder="name@example.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl border border-outline-variant/60 focus:outline-none focus:border-primary text-sm font-medium bg-surface-bright"
@@ -347,15 +372,15 @@ export default function BookAppointment() {
                   />
                 </div>
 
-                <div>
+                <div className="mt-4">
                   <label htmlFor="appointment-notes" className="block text-xs font-bold text-on-surface mb-1.5">
-                    Specific Symptoms or Requests
+                    Symptoms or Specific Questions (Optional)
                   </label>
                   <textarea
                     id="appointment-notes"
                     name="notes"
                     rows="3"
-                    placeholder="Please describe any tooth pain, sensitivity, or previous dental history..."
+                    placeholder="Describe your symptoms (e.g. Tooth ache, bleeding gums, sensitivity)..."
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl border border-outline-variant/60 focus:outline-none focus:border-primary text-sm font-medium bg-surface-bright"
@@ -363,82 +388,82 @@ export default function BookAppointment() {
                 </div>
               </div>
 
-              {/* Submit button */}
               <div className="pt-4">
                 <button
                   type="submit"
-                  className="w-full bg-primary hover:bg-primary-container text-on-primary font-bold py-4 rounded-2xl shadow-xl hover:shadow-2xl transition-all active:scale-95 text-base flex items-center justify-center gap-2"
+                  className="w-full bg-primary hover:bg-primary-container text-on-primary font-bold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all text-base flex items-center justify-center gap-2 active:scale-95"
                 >
                   <span className="material-symbols-outlined text-xl">event_available</span>
-                  Confirm & Reserve Appointment
+                  Confirm & Request Appointment
                 </button>
               </div>
-
             </form>
           </div>
         ) : (
-          <div className="bg-white rounded-3xl p-8 sm:p-12 clinical-shadow border border-outline-variant/30 text-center space-y-6">
-            <div className="w-20 h-20 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center mx-auto shadow-inner border border-amber-300">
+          <div className="bg-white rounded-3xl p-8 sm:p-12 clinical-shadow text-center space-y-6 border border-outline-variant/30 animate-fadeIn">
+            <div className="w-20 h-20 bg-amber-50 text-amber-700 border border-amber-200 rounded-full flex items-center justify-center mx-auto shadow-inner">
               <span className="material-symbols-outlined text-5xl">pending_actions</span>
             </div>
-            
-            <h2 className="text-3xl font-extrabold text-primary font-display">
-              Appointment Under Approval Process
-            </h2>
+            <div>
+              <span className="inline-block px-3.5 py-1 bg-amber-100 text-amber-800 font-extrabold text-xs rounded-full uppercase tracking-wider mb-2 border border-amber-300">
+                Pending Admin Approval
+              </span>
+              <h2 className="text-3xl font-extrabold text-primary font-display">Appointment Request Submitted</h2>
+              <p className="text-sm text-on-surface-variant max-w-lg mx-auto leading-relaxed mt-2">
+                Thank you <strong className="text-primary">{formData.name}</strong>. Your consultation request for{' '}
+                <strong className="text-primary">{formData.service}</strong> with <strong className="text-primary">{formData.preferredDoctor}</strong> is currently being processed by our clinic team.
+              </p>
+            </div>
 
-            <p className="text-base text-on-surface-variant max-w-lg mx-auto leading-relaxed">
-              Thank you, <strong className="text-primary">{formData.name}</strong>. Your appointment request for <strong className="text-primary">{formData.service}</strong> is currently in the approval process. Once approved by our clinic team, you will receive a confirmation email at <strong className="text-primary">{formData.email || 'your email address'}</strong>.
-            </p>
-
-            <div className="bg-surface-container p-6 rounded-2xl max-w-md mx-auto text-left space-y-2.5 text-sm text-on-surface border border-outline-variant/20">
+            <div className="bg-surface-bright p-6 rounded-2xl text-left text-xs space-y-2.5 max-w-md mx-auto border border-outline-variant/40">
               <div className="flex justify-between border-b border-outline-variant/20 pb-2">
-                <span className="text-on-surface-variant font-medium">Status:</span>
-                <span className="text-amber-800 font-extrabold bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1">
-                  <span>⏳ Pending Admin Approval</span>
-                </span>
+                <span className="text-on-surface-variant font-semibold">Attending Specialist:</span>
+                <strong className="text-primary">{formData.preferredDoctor}</strong>
               </div>
               <div className="flex justify-between border-b border-outline-variant/20 pb-2">
-                <span className="text-on-surface-variant font-medium">Date:</span>
-                <strong className="text-primary">{formData.date || 'Selected Date'}</strong>
+                <span className="text-on-surface-variant font-semibold">Date of Visit:</span>
+                <strong className="text-primary">{formData.date}</strong>
               </div>
               <div className="flex justify-between border-b border-outline-variant/20 pb-2">
-                <span className="text-on-surface-variant font-medium">Time Slot:</span>
+                <span className="text-on-surface-variant font-semibold">Time Slot:</span>
                 <strong className="text-primary">{formData.timeSlot}</strong>
               </div>
               <div className="flex justify-between border-b border-outline-variant/20 pb-2">
-                <span className="text-on-surface-variant font-medium">Specialist:</span>
-                <strong className="text-primary">{formData.preferredDoctor}</strong>
+                <span className="text-on-surface-variant font-semibold">Patient Phone:</span>
+                <strong className="text-primary">{formData.phone}</strong>
               </div>
-              <div className="flex justify-between">
-                <span className="text-on-surface-variant font-medium">Clinic Branch:</span>
-                <strong className="text-primary">PRS Dental Care - Kolathur</strong>
+              <div className="flex justify-between pt-1">
+                <span className="text-on-surface-variant font-semibold">Clinic Location:</span>
+                <strong className="text-primary">Kolathur, Chennai</strong>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-              <a
-                href="tel:+917200718607"
-                onClick={(e) => {
-                  if (window.innerWidth > 768) {
-                    e.preventDefault();
-                  }
-                  setIsContactOpen(true);
-                }}
-                className="bg-primary text-on-primary font-bold py-3.5 px-6 rounded-xl shadow-md transition-all text-sm flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-lg">call</span>
-                Call Clinic Directly: +91 72007 18607
-              </a>
+            <p className="text-xs text-on-surface-variant max-w-md mx-auto">
+              Our receptionist will review your preferred slot and confirm your booking via <strong>SMS & WhatsApp</strong>.
+            </p>
+
+            <div className="pt-2">
               <button
-                onClick={() => setIsSubmitted(false)}
-                className="bg-surface-container-high text-primary font-bold py-3.5 px-6 rounded-xl transition-all text-sm"
+                onClick={() => {
+                  setIsSubmitted(false);
+                  setFormData({
+                    name: '',
+                    phone: '',
+                    email: '',
+                    service: 'General Consultation & Checkup',
+                    date: '',
+                    timeSlot: '10:00 AM - 11:00 AM',
+                    preferredDoctor: 'Any Available Specialist',
+                    notes: '',
+                  });
+                }}
+                className="bg-primary hover:bg-primary-container text-on-primary font-bold px-8 py-3.5 rounded-xl shadow-md transition-all active:scale-95 text-sm"
               >
-                Book Another Appointment
+                Book Another Visit
               </button>
             </div>
           </div>
         )}
-
       </div>
 
       <ContactModal isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
