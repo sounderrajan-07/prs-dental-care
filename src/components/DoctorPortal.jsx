@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { getStoredAppointments, updateStoredStatus, updateAppointmentDetails, deleteAppointmentRecord } from '../utils/appointmentStorage';
 import { getStoredDoctors } from '../utils/doctorStorage';
+import { savePatientHistoryRecord } from '../utils/patientHistoryStorage';
 import { dispatchPatientNotifications, generateAppointmentMessage } from '../utils/notificationService';
 import InvoiceRxGeneratorModal from './InvoiceRxGeneratorModal';
 
@@ -149,6 +150,44 @@ export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, 
     setRejectionModalApt(null);
   };
 
+  // Mark Approved Patient as Completed & Automatically Sync to Patient History
+  const handleMarkCompleted = (apt) => {
+    const defaultNotes = apt.doctorRemarks || 'Treatment completed successfully at clinic.';
+
+    // 1. Update appointment record
+    updateAppointmentDetails(apt.id, {
+      treatmentStatus: 'Completed',
+      doctorRemarks: defaultNotes
+    });
+
+    // 2. Automatically log treatment record into Patient History
+    savePatientHistoryRecord({
+      patientName: apt.name,
+      patientPhone: apt.phone,
+      patientEmail: apt.email || '',
+      treatmentName: apt.service,
+      attendingDoctor: apt.preferredDoctor || activeDocObj.name,
+      doctorSpecialization: activeDocObj.specialization || 'Specialist Consultant',
+      treatmentDate: apt.date,
+      timeSlot: apt.timeSlot || apt.time || '10:00 AM - 11:00 AM',
+      duration: apt.duration || '45 mins',
+      cost: apt.cost || '₹2,500',
+      status: 'Completed',
+      notes: defaultNotes
+    });
+
+    fetchAppointments();
+
+    setNotificationToast({
+      show: true,
+      type: 'Approved',
+      patientName: apt.name,
+      phone: apt.phone,
+      smsText: `Treatment for ${apt.name} (${apt.service}) marked as COMPLETED and automatically added to Patient History!`,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    });
+  };
+
   const handleDeleteAppointment = (apt) => {
     const confirmed = window.confirm(`Are you sure you want to delete appointment for ${apt.name}?`);
     if (!confirmed) return;
@@ -182,6 +221,24 @@ export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, 
       duration: durationText,
       treatmentStatus: treatmentStatusText
     });
+
+    // If marked as Completed, automatically sync to Patient History
+    if (treatmentStatusText === 'Completed') {
+      savePatientHistoryRecord({
+        patientName: editingApt.name,
+        patientPhone: editingApt.phone,
+        patientEmail: editingApt.email || '',
+        treatmentName: editingApt.service,
+        attendingDoctor: editingApt.preferredDoctor || activeDocObj.name,
+        doctorSpecialization: activeDocObj.specialization || 'Specialist Consultant',
+        treatmentDate: editingApt.date,
+        timeSlot: editingApt.timeSlot || editingApt.time || '10:00 AM - 11:00 AM',
+        duration: durationText,
+        cost: editingApt.cost || '₹2,500',
+        status: 'Completed',
+        notes: remarksText || 'Treatment completed successfully.'
+      });
+    }
 
     setEditingApt(null);
     fetchAppointments();
@@ -217,7 +274,7 @@ export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, 
               </div>
               <div>
                 <h4 className="text-xs font-bold text-on-surface uppercase tracking-wider">
-                  Automated SMS & WhatsApp Sent
+                  Notification & History Status
                 </h4>
                 <p className="text-xs text-on-surface-variant">
                   Patient: <strong className="text-primary">{notificationToast.patientName}</strong> ({notificationToast.phone})
@@ -233,32 +290,36 @@ export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, 
           </div>
 
           <div className="p-2.5 bg-surface-container rounded-xl text-[11px] font-mono text-on-surface-variant max-h-24 overflow-y-auto border border-outline-variant/60">
-            <span className="font-bold text-primary block mb-0.5">Dispatched Message Preview:</span>
+            <span className="font-bold text-primary block mb-0.5">Status Update Log:</span>
             {notificationToast.smsText}
           </div>
 
           <div className="flex items-center justify-between gap-2 pt-1 border-t border-outline-variant/40">
             <span className="text-[10px] text-emerald-700 dark:text-emerald-300 font-bold flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-              WhatsApp Web Link Launched ({notificationToast.time})
+              Updated ({notificationToast.time})
             </span>
             <div className="flex gap-2">
-              <a
-                href={notificationToast.waUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-xs"
-              >
-                <span className="material-symbols-outlined text-xs">chat</span> WhatsApp
-              </a>
-              <a
-                href={notificationToast.smsUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-xs"
-              >
-                <span className="material-symbols-outlined text-xs">sms</span> SMS
-              </a>
+              {notificationToast.waUrl && (
+                <a
+                  href={notificationToast.waUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-xs"
+                >
+                  <span className="material-symbols-outlined text-xs">chat</span> WhatsApp
+                </a>
+              )}
+              {notificationToast.smsUrl && (
+                <a
+                  href={notificationToast.smsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-xs"
+                >
+                  <span className="material-symbols-outlined text-xs">sms</span> SMS
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -415,12 +476,18 @@ export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, 
                 <div>
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="text-[11px] font-extrabold text-primary tracking-wider uppercase">{apt.id}</span>
                         {(apt.status === 'Approved' || apt.status === 'Rejected') && (
                           <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold border border-emerald-500/20 flex items-center gap-1">
                             <span className="material-symbols-outlined text-xs">mark_email_read</span>
                             SMS & WhatsApp Sent ✓
+                          </span>
+                        )}
+                        {apt.treatmentStatus === 'Completed' && (
+                          <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-300 text-[10px] font-bold border border-blue-500/20 flex items-center gap-1">
+                            <span className="material-symbols-outlined text-xs">task_alt</span>
+                            Completed & Synced to History ✓
                           </span>
                         )}
                       </div>
@@ -461,9 +528,14 @@ export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, 
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-on-surface">Duration:</span>
-                      <span className="px-2 py-0.5 bg-surface-container-high rounded text-[11px] font-semibold flex items-center gap-1">
-                        <span className="material-symbols-outlined text-xs">schedule</span> {apt.duration || '45 mins'}
+                      <span className="font-semibold text-on-surface">Treatment Status:</span>
+                      <span className={`px-2 py-0.5 rounded text-[11px] font-extrabold flex items-center gap-1 ${
+                        apt.treatmentStatus === 'Completed'
+                          ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30'
+                          : 'bg-surface-container-high text-on-surface'
+                      }`}>
+                        <span className="material-symbols-outlined text-xs">analytics</span>
+                        {apt.treatmentStatus || 'Consultation'}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -498,6 +570,18 @@ export default function DoctorPortal({ loggedDoctor, onLogout, isAdmin = false, 
                         <span>Approve Slot</span>
                       </button>
                     )}
+
+                    {apt.status === 'Approved' && apt.treatmentStatus !== 'Completed' && (
+                      <button
+                        onClick={() => handleMarkCompleted(apt)}
+                        className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1"
+                        title="Mark treatment as completed & automatically record in Patient History"
+                      >
+                        <span className="material-symbols-outlined text-base">task_alt</span>
+                        <span>Mark Completed</span>
+                      </button>
+                    )}
+
                     {apt.status !== 'Rejected' && (
                       <button
                         onClick={() => handleOpenRejectModal(apt)}
