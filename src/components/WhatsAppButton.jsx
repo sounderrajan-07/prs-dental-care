@@ -5,7 +5,7 @@ export default function WhatsAppButton() {
   const defaultMessage = encodeURIComponent(
     'Hi PRS Dental Care, I would like to inquire about a dental appointment.'
   );
-  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${defaultMessage}`;
+  const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${defaultMessage}`;
 
   return (
     <a

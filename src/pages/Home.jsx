@@ -196,7 +196,7 @@ export default function Home() {
               <h3 className="text-base font-bold text-on-surface">Clinic Address</h3>
               <p className="text-xs text-on-surface-variant mb-1">No 59/14, Jambulingam main road, G.K.M Colony</p>
               <a
-                href="https://maps.google.com/?q=No+59/14,+Jambulingam+main+road,+Annai+Anjugam+Nagar,+G.K.M+Colony,+Chennai+-+600082"
+                href="https://www.google.com/maps/place/PRS+DENTAL+CARE/@13.1109291,80.2190888,17z/data=!3m1!4b1!4m6!3m5!1s0x3a526539797aed11:0xc121cbc2fbb3347f!8m2!3d13.1109291!4d80.2190888"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs font-extrabold text-primary hover:underline flex items-center gap-1"

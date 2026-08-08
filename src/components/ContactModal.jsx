@@ -62,7 +62,7 @@ export default function ContactModal({ isOpen, onClose }) {
           </a>
 
           <a
-            href="https://wa.me/917200718607?text=Hi%20PRS%20Dental%20Care,%20I%20would%20like%20to%20enquire%20about%20a%20consultation"
+            href="https://api.whatsapp.com/send?phone=917200718607&text=Hi%20PRS%20Dental%20Care,%20I%20would%20like%20to%20enquire%20about%20a%20consultation"
             target="_blank"
             rel="noopener noreferrer"
             className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all text-sm flex items-center justify-center gap-2 active:scale-95"
