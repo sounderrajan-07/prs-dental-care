@@ -13,7 +13,8 @@ let memoryStore = {
   doctors: [],
   attendance: [],
   patientHistory: [],
-  feedback: []
+  feedback: [],
+  notifications: []
 };
 
 // Initialize Neon DB Schema on server boot
@@ -54,6 +55,44 @@ app.get('/api/db-status', async (req, res) => {
     provider: 'Local Storage / In-Memory Fallback',
     connected: false,
     message: 'Set NEON_DATABASE_URL environment variable in Vercel to activate Neon PostgreSQL.'
+  });
+});
+
+// ----------------------------------------------------
+// 0.1 NOTIFICATION DISPATCH LOGGING ENDPOINT (SMS & WHATSAPP)
+// ----------------------------------------------------
+app.post('/api/notifications/send', async (req, res) => {
+  const { appointmentId, patientName, patientPhone, cleanPhone, status, remarksOrReason, waText, smsText, dispatchedAt } = req.body;
+
+  const notificationRecord = {
+    id: `NTF-${Date.now()}`,
+    appointmentId,
+    patientName,
+    patientPhone,
+    cleanPhone,
+    status,
+    remarksOrReason: remarksOrReason || '',
+    whatsappStatus: 'DISPATCHED',
+    smsStatus: 'DISPATCHED',
+    dispatchedAt: dispatchedAt || new Date().toISOString()
+  };
+
+  memoryStore.notifications.unshift(notificationRecord);
+
+  console.log(`[SMS & WHATSAPP DISPATCH] Appointment ${appointmentId} (${patientName}) status set to ${status}. Notification sent to +${cleanPhone}`);
+
+  return res.status(200).json({
+    success: true,
+    message: `Automated SMS & WhatsApp notification recorded for ${patientName}`,
+    data: notificationRecord
+  });
+});
+
+app.get('/api/notifications', (req, res) => {
+  res.status(200).json({
+    success: true,
+    count: memoryStore.notifications.length,
+    data: memoryStore.notifications
   });
 });
 

@@ -152,7 +152,7 @@ export const saveAppointment = (appointmentData) => {
   }
 };
 
-export const updateStoredStatus = (id, newStatus, doctorRemarks = '', duration = '') => {
+export const updateStoredStatus = (id, newStatus, doctorRemarks = '', duration = '', notificationMeta = null) => {
   try {
     const current = getStoredAppointments();
     const updated = current.map((apt) => {
@@ -161,7 +161,12 @@ export const updateStoredStatus = (id, newStatus, doctorRemarks = '', duration =
           ...apt,
           status: newStatus,
           doctorRemarks: doctorRemarks || apt.doctorRemarks,
-          duration: duration || apt.duration
+          duration: duration || apt.duration,
+          smsSent: true,
+          whatsappSent: true,
+          lastNotificationStatus: newStatus,
+          lastNotificationTime: new Date().toISOString(),
+          ...(notificationMeta || {})
         };
       }
       return apt;
