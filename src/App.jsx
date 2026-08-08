@@ -10,6 +10,8 @@ import Admin from './pages/Admin';
 import MobileActionBar from './components/MobileActionBar';
 import WhatsAppButton from './components/WhatsAppButton';
 
+import { syncAllDataWithNeonDb } from './utils/syncManager';
+
 // ScrollToTop helper on navigation
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -22,6 +24,9 @@ function ScrollToTop() {
 }
 
 export default function App() {
+  useEffect(() => {
+    syncAllDataWithNeonDb();
+  }, []);
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ScrollToTop />

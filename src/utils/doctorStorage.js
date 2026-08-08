@@ -195,6 +195,14 @@ export const saveDoctorAccount = (docData) => {
     const updated = [...current, newDoc];
     localStorage.setItem(DOCTORS_STORAGE_KEY, JSON.stringify(updated));
     window.dispatchEvent(new Event('prs_doctors_updated'));
+
+    // Automatically sync to Neon PostgreSQL API
+    fetch('/api/doctors', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newDoc)
+    }).catch(() => {});
+
     return newDoc;
   } catch (err) {
     console.error('Error saving doctor account:', err);
@@ -205,9 +213,25 @@ export const saveDoctorAccount = (docData) => {
 export const updateDoctorAccount = (id, updates) => {
   try {
     const current = getStoredDoctors();
-    const updated = current.map((d) => (d.id === id ? { ...d, ...updates } : d));
+    let targetDoc = null;
+    const updated = current.map((d) => {
+      if (d.id === id) {
+        targetDoc = { ...d, ...updates };
+        return targetDoc;
+      }
+      return d;
+    });
     localStorage.setItem(DOCTORS_STORAGE_KEY, JSON.stringify(updated));
     window.dispatchEvent(new Event('prs_doctors_updated'));
+
+    if (targetDoc) {
+      fetch('/api/doctors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(targetDoc)
+      }).catch(() => {});
+    }
+
     return updated;
   } catch (err) {
     console.error('Error updating doctor account:', err);
@@ -220,6 +244,9 @@ export const deleteDoctorAccount = (id) => {
     const updated = current.filter((d) => d.id !== id);
     localStorage.setItem(DOCTORS_STORAGE_KEY, JSON.stringify(updated));
     window.dispatchEvent(new Event('prs_doctors_updated'));
+
+    fetch(`/api/doctors/${id}`, { method: 'DELETE' }).catch(() => {});
+
     return updated;
   } catch (err) {
     console.error('Error deleting doctor account:', err);
